@@ -14,6 +14,7 @@ export const homeStyles = StyleSheet.create({
   studentName: { color: COLORS.textPrimary, fontSize: 21, fontWeight: '900', marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: 7 },
   statBadge: { paddingHorizontal: 11, paddingVertical: 9, borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.surfaceMuted },
+  statBadgePressed: { opacity: 0.72, transform: [{ scale: 0.96 }] },
   statText: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '800' },
   avatarCard: { ...SHADOWS.soft, minHeight: 390, alignItems: 'center', marginTop: 18, padding: 20, overflow: 'hidden', borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.accentSoft },
   avatarHeading: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
