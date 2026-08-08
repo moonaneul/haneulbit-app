@@ -30,6 +30,10 @@ export default function HomeScreen({ studentName }: HomeScreenProps) {
         router.push('/qt');
         return;
       }
+      if (mission.id === 'wwjd') {
+        router.push('/wwjd-quiz');
+        return;
+      }
       Alert.alert(`${mission.emoji} ${mission.title}`, '곧 신나는 미션이 열려요! 조금만 기다려 주세요 🌸');
     } catch (error) {
       console.warn('미션 안내를 여는 중 오류가 발생했습니다.', error);

@@ -1,0 +1,37 @@
+import { StyleSheet } from 'react-native';
+
+import { BORDER_RADIUS, COLORS, SHADOWS } from '@/constants/theme';
+
+export const wwjdQuizStyles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
+  scrollContent: { flexGrow: 1, alignItems: 'center', padding: 20, paddingBottom: 48 },
+  content: { width: '100%', maxWidth: 520 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backButton: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.surfaceMuted },
+  backText: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '800' },
+  scoreBadge: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: BORDER_RADIUS.badge, backgroundColor: '#FFF8E4' },
+  scoreText: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '900' },
+  title: { marginTop: 22, color: COLORS.textPrimary, fontSize: 27, lineHeight: 36, fontWeight: '900' },
+  progressRow: { flexDirection: 'row', gap: 8, marginTop: 16, marginBottom: 18 },
+  progressBar: { flex: 1, height: 8, borderRadius: 8, backgroundColor: COLORS.disabled },
+  progressActive: { backgroundColor: COLORS.mint },
+  stepLabel: { marginBottom: 8, color: COLORS.success, fontSize: 13, fontWeight: '900' },
+  card: { ...SHADOWS.soft, padding: 20, borderRadius: BORDER_RADIUS.card, backgroundColor: '#F1F7EA' },
+  question: { color: COLORS.textPrimary, fontSize: 21, lineHeight: 32, fontWeight: '900' },
+  guide: { marginTop: 10, color: COLORS.textSecondary, fontSize: 14, lineHeight: 21, fontWeight: '700' },
+  choices: { gap: 12, marginTop: 18 },
+  choice: { minHeight: 68, justifyContent: 'center', paddingHorizontal: 18, paddingVertical: 14, borderWidth: 2, borderColor: COLORS.disabled, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.cardBackground },
+  choiceText: { color: COLORS.textPrimary, fontSize: 16, lineHeight: 24, fontWeight: '800' },
+  reward: { alignSelf: 'center', marginTop: 16, paddingHorizontal: 18, paddingVertical: 11, borderRadius: BORDER_RADIUS.badge, backgroundColor: '#FFF0B8' },
+  rewardText: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '900' },
+  hint: { marginTop: 16, padding: 15, borderRadius: 18, backgroundColor: COLORS.primarySoft },
+  hintText: { color: COLORS.primary, fontSize: 15, lineHeight: 22, fontWeight: '800', textAlign: 'center' },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
+  modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(41, 42, 45, 0.42)' },
+  modalCard: { ...SHADOWS.soft, width: '100%', maxWidth: 390, alignItems: 'center', padding: 28, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.cardBackground },
+  shield: { fontSize: 86 },
+  modalTitle: { marginTop: 8, color: COLORS.textPrimary, fontSize: 24, lineHeight: 32, fontWeight: '900', textAlign: 'center' },
+  modalBody: { marginTop: 10, color: COLORS.textSecondary, fontSize: 16, lineHeight: 24, fontWeight: '700', textAlign: 'center' },
+  completeButton: { width: '100%', minHeight: 56, alignItems: 'center', justifyContent: 'center', marginTop: 22, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.primary },
+  completeText: { color: COLORS.textOnPrimary, fontSize: 16, fontWeight: '900' },
+});
