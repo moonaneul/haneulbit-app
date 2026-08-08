@@ -1,0 +1,38 @@
+import { StyleSheet } from 'react-native';
+
+import { BORDER_RADIUS, COLORS, Fonts, MaxContentWidth, SHADOWS, Spacing } from '@/constants/theme';
+
+export const armorShopStyles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
+  scrollContent: { flexGrow: 1, paddingBottom: Spacing.six },
+  content: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', padding: Spacing.three, gap: Spacing.three },
+  profileBar: { backgroundColor: COLORS.cardBackground, borderRadius: BORDER_RADIUS.card, padding: Spacing.four, gap: Spacing.two, ...SHADOWS.soft },
+  title: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 24, fontWeight: '800' },
+  talentBadge: { alignSelf: 'flex-start', backgroundColor: COLORS.primarySoft, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: Spacing.three, paddingVertical: 10 },
+  talentText: { color: COLORS.primary, fontFamily: Fonts.rounded, fontSize: 17, fontWeight: '800' },
+  heroCard: { alignItems: 'center', backgroundColor: COLORS.accentSoft, borderRadius: BORDER_RADIUS.card, padding: Spacing.four, gap: Spacing.two },
+  heroLabel: { color: COLORS.textSecondary, fontFamily: Fonts.rounded, fontSize: 15, fontWeight: '700' },
+  character: { fontSize: 74 },
+  equippedRow: { minHeight: 34, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: Spacing.two },
+  equippedChip: { backgroundColor: COLORS.cardBackground, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: 12, paddingVertical: 6 },
+  equippedText: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '700' },
+  emptyText: { color: COLORS.textSecondary, fontSize: 14 },
+  sectionTitle: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 21, fontWeight: '800', marginTop: Spacing.two },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.three },
+  itemCard: { width: '47%', flexGrow: 1, minWidth: 145, borderRadius: BORDER_RADIUS.card, padding: Spacing.three, gap: Spacing.two, ...SHADOWS.soft },
+  itemEmoji: { fontSize: 42 },
+  bonusBadge: { alignSelf: 'flex-start', backgroundColor: COLORS.secondary, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: 10, paddingVertical: 4 },
+  bonusText: { color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
+  itemName: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 17, fontWeight: '800' },
+  itemDescription: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, minHeight: 38 },
+  actionButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: BORDER_RADIUS.button, paddingHorizontal: Spacing.two },
+  equipButton: { backgroundColor: COLORS.accent },
+  equippedButton: { backgroundColor: COLORS.success },
+  buttonText: { color: COLORS.textOnPrimary, fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  pressed: { opacity: 0.78, transform: [{ scale: 0.98 }] },
+  modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(41, 42, 45, 0.38)', padding: Spacing.four },
+  modalCard: { width: '100%', maxWidth: 360, alignItems: 'center', backgroundColor: COLORS.cardBackground, borderRadius: BORDER_RADIUS.card, padding: Spacing.five, gap: Spacing.three, ...SHADOWS.soft },
+  modalEmoji: { fontSize: 72 },
+  modalTitle: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 22, fontWeight: '800', textAlign: 'center' },
+  modalButton: { width: '100%', minHeight: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: BORDER_RADIUS.button },
+});

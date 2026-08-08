@@ -11,10 +11,11 @@ import StatusMessageCard from './StatusMessageCard';
 interface HomeScreenProps {
   studentName?: string;
   onMissionPress?: (mission: StudentMission) => void;
+  onArmorShopPress?: () => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName, onMissionPress }: HomeScreenProps) {
+export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress }: HomeScreenProps) {
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -57,7 +58,14 @@ export default function HomeScreen({ studentName, onMissionPress }: HomeScreenPr
 
           <StatusMessageCard message={statusMessage} onSave={setStatusMessage} />
 
-          <AvatarCard isTalking={isAvatarTalking} onPress={() => setIsAvatarTalking((current) => !current)} />
+          <AvatarCard
+            isTalking={isAvatarTalking}
+            onPress={() => setIsAvatarTalking((current) => !current)}
+            onShopPress={() => {
+              if (onArmorShopPress) onArmorShopPress();
+              else Alert.alert('달란트 상점', '상점 화면을 준비하고 있어요 🌸');
+            }}
+          />
           <MissionGrid missions={STUDENT_MISSIONS} onMissionPress={handleMissionPress} />
         </View>
       </ScrollView>

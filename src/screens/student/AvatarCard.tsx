@@ -6,10 +6,11 @@ import { homeStyles as styles } from './homeStyles';
 interface AvatarCardProps {
   isTalking: boolean;
   onPress: () => void;
+  onShopPress: () => void;
 }
 
 /** 전신갑주를 입은 학생 아바타와 터치 말풍선을 보여 줍니다. */
-export default function AvatarCard({ isTalking, onPress }: AvatarCardProps) {
+export default function AvatarCard({ isTalking, onPress, onShopPress }: AvatarCardProps) {
   // 말풍선이 나타날 때 통통 튀는 크기 효과에 사용하는 값입니다.
   const [bubbleScale] = useState(() => new Animated.Value(0.85));
 
@@ -50,6 +51,14 @@ export default function AvatarCard({ isTalking, onPress }: AvatarCardProps) {
         </View>
       </Pressable>
       <Text style={styles.tapGuide}>캐릭터를 톡 눌러 봐!</Text>
+      <Pressable
+        accessibilityHint="달란트로 전신갑주를 구매하고 착용할 수 있습니다"
+        accessibilityLabel="달란트 상점 가기"
+        accessibilityRole="button"
+        onPress={onShopPress}
+        style={({ pressed }) => [styles.shopButton, pressed && styles.avatarPressed]}>
+        <Text style={styles.shopButtonText}>달란트 상점 가기 🛡️</Text>
+      </Pressable>
     </View>
   );
 }

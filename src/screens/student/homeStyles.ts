@@ -32,6 +32,8 @@ export const homeStyles = StyleSheet.create({
   armor: { fontSize: 43, lineHeight: 48, marginTop: -8 },
   boots: { fontSize: 25, lineHeight: 30, marginTop: -5 },
   tapGuide: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '800' },
+  shopButton: { minHeight: 50, width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: 14, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.primary },
+  shopButtonText: { color: COLORS.textOnPrimary, fontSize: 16, fontWeight: '900' },
   missionHeader: { marginTop: 28, marginBottom: 14 },
   sectionTitle: { color: COLORS.textPrimary, fontSize: 22, fontWeight: '900' },
   sectionCaption: { color: COLORS.textSecondary, fontSize: 13, fontWeight: '600', marginTop: 5 },

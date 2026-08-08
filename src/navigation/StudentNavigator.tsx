@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { COLORS, Fonts, SHADOWS } from '@/constants/theme';
 import LoginScreen from '@/screens/auth/LoginScreen';
+import ArmorShopScreen from '@/screens/student/ArmorShopScreen';
 import GratitudeScreen from '@/screens/student/GratitudeScreen';
 import HomeScreen from '@/screens/student/HomeScreen';
 import type { StudentMission } from '@/screens/student/homeData';
@@ -23,6 +24,7 @@ export type StudentStackParamList = {
   WwjdQuiz: undefined;
   Gratitude: undefined;
   MindTalk: undefined;
+  ArmorShop: undefined;
 };
 
 const Stack = createStackNavigator<StudentStackParamList>();
@@ -51,7 +53,13 @@ function HomeRoute({ navigation, route }: StackScreenProps<StudentStackParamList
     if (destination) navigation.navigate(destination);
   };
 
-  return <HomeScreen onMissionPress={handleMissionPress} studentName={route.params?.studentName} />;
+  return (
+    <HomeScreen
+      onArmorShopPress={() => navigation.navigate('ArmorShop')}
+      onMissionPress={handleMissionPress}
+      studentName={route.params?.studentName}
+    />
+  );
 }
 
 /** 기능 화면의 헤더에서 언제든 마이페이지로 돌아갈 수 있는 큰 홈 버튼입니다. */
@@ -91,6 +99,7 @@ export default function StudentNavigator() {
       <Stack.Screen component={WwjdQuizScreen} name="WwjdQuiz" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: 'WWJD 퀴즈 🚦' })} />
       <Stack.Screen component={GratitudeScreen} name="Gratitude" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '감사 보물상자 🎁' })} />
       <Stack.Screen component={MindTalkScreen} name="MindTalk" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '하늘빛 마음 톡 💬' })} />
+      <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '달란트 상점 🛡️' })} />
     </Stack.Navigator>
   );
 }
