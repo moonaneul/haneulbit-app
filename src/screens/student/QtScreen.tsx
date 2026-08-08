@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { QtFriendFeed } from './QtFriendFeed';
 import { containsUnsafeLanguage, TODAY_QT } from './qtData';
 import { qtStyles as styles } from './qtStyles';
 
@@ -26,6 +28,9 @@ export default function QtScreen({ onBack }: QtScreenProps) {
   // 작성 중인 나눔과 입력창 강조 여부를 각각 관리합니다.
   const [reflection, setReflection] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  // 등록 여부가 친구 피드의 잠금 상태를 결정합니다.
+  const [submittedReflection, setSubmittedReflection] = useState<string | null>(null);
+  const [isSafetyModalVisible, setIsSafetyModalVisible] = useState(false);
 
   const todayLabel = useMemo(
     () =>
@@ -63,14 +68,10 @@ export default function QtScreen({ onBack }: QtScreenProps) {
         return;
       }
       if (containsUnsafeLanguage(trimmedReflection)) {
-        Alert.alert(
-          '우리의 말을 예쁘게 가꿔요 🌸',
-          '친구의 마음을 아프게 할 수 있는 표현이 보여요. 따뜻한 말로 바꿔서 다시 등록해 주세요.',
-        );
+        setIsSafetyModalVisible(true);
         return;
       }
-      Alert.alert('나눔 등록 완료! 🎉', '+10 달란트를 받았어요. 오늘도 말씀과 함께 자랐어요!');
-      setReflection('');
+      setSubmittedReflection(trimmedReflection);
     } catch (error) {
       console.warn('QT 나눔 등록 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -128,39 +129,59 @@ export default function QtScreen({ onBack }: QtScreenProps) {
 
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>✏️ 오늘의 한 줄 나눔</Text>
-              <TextInput
-                accessibilityLabel="오늘 말씀에서 느낀 점"
-                maxLength={150}
-                multiline
-                onBlur={() => setIsFocused(false)}
-                onChangeText={setReflection}
-                onFocus={() => setIsFocused(true)}
-                placeholder="오늘 말씀에서 느낀 점을 적어보아요!"
-                placeholderTextColor="#96918A"
-                style={[styles.input, isFocused && styles.inputFocused]}
-                value={reflection}
-              />
-              <View style={styles.inputFooter}>
-                <Text style={styles.safeHint}>🌸 서로를 아끼는 따뜻한 말을 사용해요.</Text>
-                <Text style={styles.counter}>{reflection.length}/150</Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                disabled={!trimmedReflection}
-                onPress={handleSubmit}
-                style={({ pressed }) => [
-                  styles.submitButton,
-                  !trimmedReflection && styles.submitDisabled,
-                  pressed && styles.pressed,
-                ]}>
-                <Text style={[styles.submitText, !trimmedReflection && styles.submitTextDisabled]}>
-                  나눔 등록하기 (+10 달란트 🪙)
-                </Text>
-              </Pressable>
+              {submittedReflection ? (
+                <View style={styles.completedBox}>
+                  <Text style={styles.rewardText}>🎉 +10 달란트 획득!</Text>
+                  <Text style={styles.myReflection}>{submittedReflection}</Text>
+                </View>
+              ) : (
+                <>
+                  <TextInput
+                    accessibilityLabel="오늘 말씀에서 느낀 점"
+                    maxLength={150}
+                    multiline
+                    onBlur={() => setIsFocused(false)}
+                    onChangeText={setReflection}
+                    onFocus={() => setIsFocused(true)}
+                    placeholder="오늘 말씀에서 느낀 점을 적어보아요!"
+                    placeholderTextColor="#96918A"
+                    style={[styles.input, isFocused && styles.inputFocused]}
+                    value={reflection}
+                  />
+                  <View style={styles.inputFooter}>
+                    <Text style={styles.safeHint}>🌸 서로를 아끼는 따뜻한 말을 사용해요.</Text>
+                    <Text style={styles.counter}>{reflection.length}/150</Text>
+                  </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={!trimmedReflection}
+                    onPress={handleSubmit}
+                    style={({ pressed }) => [styles.submitButton, !trimmedReflection && styles.submitDisabled, pressed && styles.pressed]}>
+                    <Text style={[styles.submitText, !trimmedReflection && styles.submitTextDisabled]}>
+                      나눔 등록하기 (+10 달란트 🪙)
+                    </Text>
+                  </Pressable>
+                </>
+              )}
             </View>
+
+            <QtFriendFeed isUnlocked={Boolean(submittedReflection)} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal animationType="fade" transparent visible={isSafetyModalVisible} onRequestClose={() => setIsSafetyModalVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View accessibilityViewIsModal style={styles.modalCard}>
+            <Text style={styles.modalEmoji}>🌸</Text>
+            <Text style={styles.modalTitle}>예쁜 말로 바꿔볼까요? 🌸</Text>
+            <Text style={styles.modalMessage}>친구의 마음을 아프게 할 수 있는 표현이 보여요. 따뜻한 말로 다시 적어 주세요.</Text>
+            <Pressable accessibilityRole="button" onPress={() => setIsSafetyModalVisible(false)} style={({ pressed }) => [styles.modalButton, pressed && styles.pressed]}>
+              <Text style={styles.modalButtonText}>다시 적어볼게요</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
