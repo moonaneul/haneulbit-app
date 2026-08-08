@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BORDER_RADIUS, COLORS } from '@/constants/theme';
+
 const NUMBER_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 /**
@@ -55,16 +57,11 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 28,
-    backgroundColor: '#EAF3F6',
-    shadowColor: '#657A82',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 2,
+    borderRadius: BORDER_RADIUS.button,
+    backgroundColor: COLORS.surfaceMuted,
   },
-  keyPressed: { transform: [{ scale: 0.92 }], backgroundColor: '#DCECEF' },
+  keyPressed: { transform: [{ scale: 0.94 }], backgroundColor: COLORS.primarySoft },
   disabled: { opacity: 0.45 },
-  keyText: { color: '#4F6269', fontSize: 24, fontWeight: '800' },
+  keyText: { color: COLORS.textPrimary, fontSize: 23, fontWeight: '800' },
   keyPlaceholder: { width: 76, height: 60 },
 });

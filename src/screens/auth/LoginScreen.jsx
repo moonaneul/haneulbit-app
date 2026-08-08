@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Image } from 'expo-image';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -13,6 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AnimatedPinFeedback from '@/components/auth/AnimatedPinFeedback';
 import PinKeypad from '@/components/auth/PinKeypad';
+import AppButton from '@/components/ui/AppButton';
+import Surface from '@/components/ui/Surface';
+import { COLORS } from '@/constants/theme';
 import { MOCK_LOGIN_PIN, MOCK_STUDENTS } from '@/data/mockStudents';
 import { loginStyles as styles } from './loginStyles';
 
@@ -68,25 +72,26 @@ export default function LoginScreen({ onLoginSuccess }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.peachBubble} />
-          <View style={styles.blueBubble} />
           <View style={styles.header}>
             <View style={styles.brandBadge}>
-              <Text style={styles.brandBadgeText}>HANEULBIT KIDS</Text>
+              <Text style={styles.brandBadgeText}>매일 3분, 마음이 쑥쑥</Text>
             </View>
-            <View style={styles.logoSticker}>
-              <Text style={styles.logo}>🕊️</Text>
-            </View>
-            <Text style={styles.title}>매일 만나 하늘빛</Text>
-            <Text style={styles.subtitle}>오늘도 신나는 이야기가 기다리고 있어요</Text>
+            <Text style={styles.title}>오늘도 만나서 반가워!</Text>
+            <Text style={styles.subtitle}>예수님과 오늘도 함께 걸어가요</Text>
           </View>
 
-          <View style={styles.card}>
+          <Image
+            accessibilityLabel="예수님이 두 아이의 손을 잡고 햇살 길을 함께 걷는 그림"
+            contentFit="cover"
+            source={require('@/assets/images/login-hero-jesus.png')}
+            style={styles.heroImage}
+          />
+
+          <Surface style={styles.card}>
             <View style={styles.sectionHeader}>
-              <View style={styles.stepBadge}><Text style={styles.stepText}>1</Text></View>
               <View>
-                <Text style={styles.sectionTitle}>누구와 함께할까요?</Text>
-                <Text style={styles.sectionCaption}>내 캐릭터를 골라 주세요</Text>
+                <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
+                <Text style={styles.sectionCaption}>내 이름을 고르거나 직접 입력해요</Text>
               </View>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.studentRow}>
@@ -101,11 +106,8 @@ export default function LoginScreen({ onLoginSuccess }) {
                     selectedStudentId === student.id && styles.studentButtonSelected,
                     pressed && styles.studentPressed,
                   ]}>
-                  <View style={styles.characterBubble}>
-                    <Text style={styles.studentEmoji}>{student.emoji}</Text>
-                  </View>
+                  <Text style={styles.studentInitial}>{student.name.slice(0, 1)}</Text>
                   <Text style={styles.studentName}>{student.name}</Text>
-                  {selectedStudentId === student.id && <Text style={styles.selectedCheck}>✓</Text>}
                 </Pressable>
               ))}
             </ScrollView>
@@ -116,34 +118,29 @@ export default function LoginScreen({ onLoginSuccess }) {
               maxLength={20}
               onChangeText={(text) => { setStudentName(text); setSelectedStudentId(''); }}
               placeholder="내 이름이나 아이디 직접 입력하기"
-              placeholderTextColor="#AAA39A"
+              placeholderTextColor={COLORS.textSecondary}
               style={styles.input}
               value={studentName}
             />
 
             <View style={[styles.sectionHeader, styles.pinHeader]}>
-              <View style={[styles.stepBadge, styles.stepBadgeBlue]}><Text style={styles.stepText}>2</Text></View>
               <View>
-                <Text style={styles.sectionTitle}>비밀 번호를 알려 주세요</Text>
-                <Text style={styles.sectionCaption}>PIN 숫자 4자리를 눌러요</Text>
+                <Text style={styles.sectionTitle}>비밀 번호 4자리</Text>
+                <Text style={styles.sectionCaption}>숫자를 누르면 별이 하나씩 나타나요</Text>
               </View>
             </View>
             <AnimatedPinFeedback pinLength={pin.length} />
             <PinKeypad disabled={isLoggingIn} onDelete={handleDelete} onNumberPress={handleNumberPress} />
             <View style={styles.helperPill}><Text style={styles.helper}>연습용 PIN · 0000</Text></View>
 
-            <Pressable
-              accessibilityRole="button"
+            <AppButton
               disabled={!isReady || isLoggingIn}
+              label={isLoggingIn ? '문을 여는 중...' : '하늘빛 마을로 출발'}
               onPress={handleLogin}
-              style={({ pressed }) => [
-                styles.loginButton, isReady && styles.loginButtonReady,
-                pressed && styles.loginButtonPressed, (!isReady || isLoggingIn) && styles.loginButtonDisabled,
-              ]}>
-              <Text style={styles.loginText}>{isLoggingIn ? '문을 여는 중...' : '하늘빛 마을로 출발'}</Text>
-              {!isLoggingIn && <Text style={styles.loginArrow}>→</Text>}
-            </Pressable>
-          </View>
+              style={styles.loginButton}
+              trailingText={isLoggingIn ? undefined : '→'}
+            />
+          </Surface>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
