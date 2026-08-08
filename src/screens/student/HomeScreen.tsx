@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,11 +10,11 @@ import StatusMessageCard from './StatusMessageCard';
 
 interface HomeScreenProps {
   studentName?: string;
+  onMissionPress?: (mission: StudentMission) => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName }: HomeScreenProps) {
-  const router = useRouter();
+export default function HomeScreen({ studentName, onMissionPress }: HomeScreenProps) {
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -26,20 +25,9 @@ export default function HomeScreen({ studentName }: HomeScreenProps) {
   // 아직 실제 화면이 없는 미션은 친근한 안내창으로 터치 동작을 확인합니다.
   const handleMissionPress = (mission: StudentMission) => {
     try {
-      if (mission.id === 'qt') {
-        router.push('/qt');
-        return;
-      }
-      if (mission.id === 'wwjd') {
-        router.push('/wwjd-quiz');
-        return;
-      }
-      if (mission.id === 'gratitude') {
-        router.push('/gratitude');
-        return;
-      }
-      if (mission.id === 'talk') {
-        router.push('/mind-talk');
+      // 네비게이터가 전달한 콜백이 있으면 미션에 맞는 Stack 화면으로 이동합니다.
+      if (onMissionPress && ['qt', 'wwjd', 'gratitude', 'talk'].includes(mission.id)) {
+        onMissionPress(mission);
         return;
       }
       Alert.alert(`${mission.emoji} ${mission.title}`, '곧 신나는 미션이 열려요! 조금만 기다려 주세요 🌸');
