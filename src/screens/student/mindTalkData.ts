@@ -5,7 +5,6 @@ export interface MindTalkMessage {
   sender: MessageSender;
   text: string;
   time: string;
-  audioDuration?: number;
 }
 
 // Supabase 연결 전에도 1:1 대화 화면을 바로 확인할 수 있는 예시 메시지입니다.
@@ -13,9 +12,8 @@ export const MOCK_MIND_TALK_MESSAGES: MindTalkMessage[] = [
   {
     id: 'teacher-1',
     sender: 'teacher',
-    text: '하늘아, 오늘 학교 생활은 어땠니? 기도제목이 있으면 언제든 말해주렴 🌸',
+    text: '하늘아, 오늘 하루는 어땠니? 속상한 일이나 기도제목이 있으면 언제든 편하게 말해주렴 🌸',
     time: '오후 3:20',
-    audioDuration: 10,
   },
   {
     id: 'student-1',

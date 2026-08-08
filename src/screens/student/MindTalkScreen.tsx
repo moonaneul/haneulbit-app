@@ -12,8 +12,6 @@ export default function MindTalkScreen({ onBack }: MindTalkScreenProps) {
   const [messages, setMessages] = useState<MindTalkMessage[]>(MOCK_MIND_TALK_MESSAGES);
   const [draft, setDraft] = useState('');
   const [isSafetyModalVisible, setIsSafetyModalVisible] = useState(false);
-  // 실제 음원 연결 전에도 재생 버튼의 반응을 확인할 수 있는 Mock 상태입니다.
-  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const listRef = useRef<FlatList<MindTalkMessage>>(null);
   const canSend = draft.trim().length > 0;
 
@@ -40,30 +38,14 @@ export default function MindTalkScreen({ onBack }: MindTalkScreenProps) {
     }
   };
 
-  /** 10초 음성 카드의 재생·멈춤 모양을 바꾸는 Mock 동작입니다. */
-  const handleAudioPress = (messageId: string) => {
-    try {
-      setPlayingAudioId((current) => current === messageId ? null : messageId);
-    } catch (error) {
-      console.warn('음성 메시지를 여는 중 오류가 발생했습니다.', error);
-      Alert.alert('음성을 들을 수 없어요', '잠시 후 다시 시도해 주세요 🌸');
-    }
-  };
-
+  /** 보낸 사람에 따라 말풍선의 위치와 파스텔 색상을 다르게 보여 줍니다. */
   const renderMessage = ({ item }: { item: MindTalkMessage }) => {
     const isStudent = item.sender === 'student';
-    const isPlaying = playingAudioId === item.id;
     return (
       <View style={[styles.messageRow, isStudent && styles.studentRow]}>
         <Text style={styles.senderLabel}>{isStudent ? '나' : '선생님 🌷'}</Text>
         <View style={[styles.bubble, isStudent && styles.studentBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
-          {item.audioDuration && (
-            <Pressable accessibilityLabel={`선생님 음성 ${item.audioDuration}초 ${isPlaying ? '멈추기' : '듣기'}`} accessibilityRole="button" onPress={() => handleAudioPress(item.id)} style={({ pressed }) => [styles.audioButton, pressed && styles.pressed]}>
-              <Text style={styles.audioIcon}>{isPlaying ? '⏸️' : '▶️'}</Text>
-              <Text style={styles.audioText}>{isPlaying ? '선생님 음성 듣는 중...' : `선생님 음성 듣기 · ${item.audioDuration}초`}</Text>
-            </Pressable>
-          )}
           <Text style={styles.timeText}>{item.time}</Text>
         </View>
       </View>
