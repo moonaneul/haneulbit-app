@@ -1,0 +1,166 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { containsUnsafeLanguage, TODAY_QT } from './qtData';
+import { qtStyles as styles } from './qtStyles';
+
+interface QtScreenProps {
+  onBack?: () => void;
+}
+
+/** 학생이 오늘의 말씀을 듣고 한 줄 묵상을 남기는 3분 QT 화면입니다. */
+export default function QtScreen({ onBack }: QtScreenProps) {
+  // TTS 패키지 연결 전에도 재생 UI를 시험할 수 있는 Mock 오디오 상태입니다.
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  // 작성 중인 나눔과 입력창 강조 여부를 각각 관리합니다.
+  const [reflection, setReflection] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+
+  const todayLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long',
+      }).format(new Date()),
+    [],
+  );
+
+  // 1초마다 진행도를 올리고 끝나면 처음 상태로 돌려놓습니다.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const timer = setInterval(() => {
+      setElapsedSeconds((current) => {
+        if (current + 1 >= TODAY_QT.mockDurationSeconds) {
+          setIsPlaying(false);
+          return 0;
+        }
+        return current + 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isPlaying]);
+
+  const progress = `${(elapsedSeconds / TODAY_QT.mockDurationSeconds) * 100}%` as `${number}%`;
+  const trimmedReflection = reflection.trim();
+
+  const handleSubmit = () => {
+    try {
+      if (!trimmedReflection) {
+        Alert.alert('한 줄 나눔을 기다리고 있어요', '오늘 느낀 점을 짧게라도 적어 보아요 🌱');
+        return;
+      }
+      if (containsUnsafeLanguage(trimmedReflection)) {
+        Alert.alert(
+          '우리의 말을 예쁘게 가꿔요 🌸',
+          '친구의 마음을 아프게 할 수 있는 표현이 보여요. 따뜻한 말로 바꿔서 다시 등록해 주세요.',
+        );
+        return;
+      }
+      Alert.alert('나눔 등록 완료! 🎉', '+10 달란트를 받았어요. 오늘도 말씀과 함께 자랐어요!');
+      setReflection('');
+    } catch (error) {
+      console.warn('QT 나눔 등록 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            {onBack && (
+              <Pressable
+                accessibilityLabel="마이페이지로 돌아가기"
+                accessibilityRole="button"
+                onPress={onBack}
+                style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+                <Text style={styles.backText}>← 돌아가기</Text>
+              </Pressable>
+            )}
+
+            <View style={styles.header}>
+              <Text style={styles.title}>오늘의 3분 Daily QT 📖</Text>
+              <Text style={styles.date}>{todayLabel}</Text>
+            </View>
+
+            <View style={[styles.card, styles.verseCard]}>
+              <Text style={styles.sectionLabel}>오늘의 요절</Text>
+              <Text style={styles.reference}>{TODAY_QT.reference}</Text>
+              <Text style={styles.verse}>“{TODAY_QT.verse}”</Text>
+              <View style={styles.audioRow}>
+                <Pressable
+                  accessibilityLabel={isPlaying ? '말씀 음성 일시정지' : '말씀 음성 재생'}
+                  accessibilityRole="button"
+                  onPress={() => setIsPlaying((current) => !current)}
+                  style={({ pressed }) => [styles.audioButton, pressed && styles.pressed]}>
+                  <Text style={styles.audioButtonText}>{isPlaying ? '⏸ 잠시 멈춤' : '▶ AI 음성 듣기'}</Text>
+                </Pressable>
+                <View accessibilityRole="progressbar" style={styles.progressTrack}>
+                  <View style={[styles.progressFill, { width: progress }]} />
+                </View>
+              </View>
+              <Text style={styles.audioHint}>친근한 AI 선생님 목소리 · 약 24초 (Mock)</Text>
+            </View>
+
+            <View style={[styles.card, styles.teacherCard]}>
+              <Text style={styles.sectionTitle}>💌 선생님의 1분 한 줄 메시지</Text>
+              <Text style={styles.teacherMessage}>{TODAY_QT.teacherMessage}</Text>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>✏️ 오늘의 한 줄 나눔</Text>
+              <TextInput
+                accessibilityLabel="오늘 말씀에서 느낀 점"
+                maxLength={150}
+                multiline
+                onBlur={() => setIsFocused(false)}
+                onChangeText={setReflection}
+                onFocus={() => setIsFocused(true)}
+                placeholder="오늘 말씀에서 느낀 점을 적어보아요!"
+                placeholderTextColor="#96918A"
+                style={[styles.input, isFocused && styles.inputFocused]}
+                value={reflection}
+              />
+              <View style={styles.inputFooter}>
+                <Text style={styles.safeHint}>🌸 서로를 아끼는 따뜻한 말을 사용해요.</Text>
+                <Text style={styles.counter}>{reflection.length}/150</Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                disabled={!trimmedReflection}
+                onPress={handleSubmit}
+                style={({ pressed }) => [
+                  styles.submitButton,
+                  !trimmedReflection && styles.submitDisabled,
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.submitText, !trimmedReflection && styles.submitTextDisabled]}>
+                  나눔 등록하기 (+10 달란트 🪙)
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
