@@ -13,10 +13,11 @@ interface HomeScreenProps {
   onMissionPress?: (mission: StudentMission) => void;
   onArmorShopPress?: () => void;
   onStatusFeedPress?: (myName: string, myMessage: string) => void;
+  onNoticeCalendarPress?: () => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress }: HomeScreenProps) {
+export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress }: HomeScreenProps) {
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -48,6 +49,20 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
       Alert.alert('마을 게시판', '게시판 화면을 준비하고 있어요 🌸');
     } catch (error) {
       console.warn('마을 게시판으로 이동하는 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
+  /** 알림장 & 캘린더 배너는 아직 콜백이 없으면 준비 중 안내창을 보여 줍니다. */
+  const handleNoticeCalendarPress = () => {
+    try {
+      if (onNoticeCalendarPress) {
+        onNoticeCalendarPress();
+        return;
+      }
+      Alert.alert('알림장 & 캘린더', '화면을 준비하고 있어요 🌸');
+    } catch (error) {
+      console.warn('알림장 & 캘린더로 이동하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
     }
   };
@@ -100,6 +115,19 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
             onShopPress={handleArmorShopPress}
           />
           <MissionGrid missions={STUDENT_MISSIONS} onMissionPress={handleMissionPress} />
+
+          <Pressable
+            accessibilityLabel="알림장 & 캘린더, 선생님 공지사항과 초등부 일정 확인하기"
+            accessibilityRole="button"
+            onPress={handleNoticeCalendarPress}
+            style={({ pressed }) => [styles.noticeBanner, pressed && styles.noticeBannerPressed]}>
+            <Text style={styles.noticeBannerEmoji}>📋</Text>
+            <View style={styles.noticeBannerCopy}>
+              <Text style={styles.noticeBannerTitle}>알림장 & 캘린더</Text>
+              <Text style={styles.noticeBannerDescription}>선생님 공지사항과 이번 달 일정을 확인해요</Text>
+            </View>
+            <Text style={styles.noticeBannerArrow}>›</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -46,4 +46,11 @@ export const homeStyles = StyleSheet.create({
   missionTitle: { color: COLORS.textPrimary, fontSize: 16, lineHeight: 22, fontWeight: '900', marginTop: 12 },
   missionDescription: { color: COLORS.textSecondary, fontSize: 11, lineHeight: 16, fontWeight: '700', marginTop: 3, paddingRight: 16 },
   missionArrow: { position: 'absolute', right: 16, bottom: 14, color: COLORS.textPrimary, fontSize: 19, fontWeight: '900' },
+  noticeBanner: { ...SHADOWS.soft, flexDirection: 'row', alignItems: 'center', marginTop: 14, padding: 16, borderRadius: BORDER_RADIUS.card, backgroundColor: '#FFF8E4' },
+  noticeBannerPressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
+  noticeBannerEmoji: { fontSize: 26, marginRight: 13 },
+  noticeBannerCopy: { flex: 1 },
+  noticeBannerTitle: { color: COLORS.textPrimary, fontSize: 15, fontWeight: '900' },
+  noticeBannerDescription: { marginTop: 3, color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
+  noticeBannerArrow: { color: COLORS.textSecondary, fontSize: 20, fontWeight: '900' },
 });

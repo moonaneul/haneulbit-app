@@ -12,6 +12,7 @@ import GratitudeScreen from '@/screens/student/GratitudeScreen';
 import HomeScreen from '@/screens/student/HomeScreen';
 import type { StudentMission } from '@/screens/student/homeData';
 import MindTalkScreen from '@/screens/student/MindTalkScreen';
+import NoticeCalendarScreen from '@/screens/student/NoticeCalendarScreen';
 import QtScreen from '@/screens/student/QtScreen';
 import StatusFeedScreen from '@/screens/student/StatusFeedScreen';
 import WwjdQuizScreen from '@/screens/student/WwjdQuizScreen';
@@ -27,6 +28,7 @@ export type StudentStackParamList = {
   MindTalk: undefined;
   ArmorShop: undefined;
   StatusFeed: { myName: string; myMessage: string };
+  NoticeCalendar: undefined;
 };
 
 const Stack = createStackNavigator<StudentStackParamList>();
@@ -59,6 +61,7 @@ function HomeRoute({ navigation, route }: StackScreenProps<StudentStackParamList
     <HomeScreen
       onArmorShopPress={() => navigation.navigate('ArmorShop')}
       onMissionPress={handleMissionPress}
+      onNoticeCalendarPress={() => navigation.navigate('NoticeCalendar')}
       onStatusFeedPress={(myName, myMessage) => navigation.navigate('StatusFeed', { myName, myMessage })}
       studentName={route.params?.studentName}
     />
@@ -109,6 +112,7 @@ export default function StudentNavigator() {
       <Stack.Screen component={MindTalkScreen} name="MindTalk" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '하늘빛 마음 톡 💬' })} />
       <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '달란트 상점 🛡️' })} />
       <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '마음 게시판 🌍' })} />
+      <Stack.Screen component={NoticeCalendarScreen} name="NoticeCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '알림장 & 캘린더 📖' })} />
     </Stack.Navigator>
   );
 }
