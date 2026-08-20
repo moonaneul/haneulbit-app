@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { COLORS } from '@/constants/theme';
-import StudentNavigator from '@/navigation/StudentNavigator';
+import RootNavigator from '@/navigation/RootNavigator';
 
 // React Navigation의 기본 동작은 유지하면서 앱 디자인 시스템의 파스텔 색상을 적용합니다.
 const navigationTheme = {
@@ -25,7 +25,7 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer theme={navigationTheme}>
         <StatusBar style="dark" />
-        <StudentNavigator />
+        <RootNavigator />
       </NavigationContainer>
     </SafeAreaProvider>
   );

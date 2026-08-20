@@ -13,6 +13,7 @@ import HomeScreen from '@/screens/student/HomeScreen';
 import type { StudentMission } from '@/screens/student/homeData';
 import MindTalkScreen from '@/screens/student/MindTalkScreen';
 import QtScreen from '@/screens/student/QtScreen';
+import StatusFeedScreen from '@/screens/student/StatusFeedScreen';
 import WwjdQuizScreen from '@/screens/student/WwjdQuizScreen';
 
 /** 모든 학생용 Stack 화면과 화면별 파라미터를 한곳에서 관리합니다. */
@@ -25,6 +26,7 @@ export type StudentStackParamList = {
   Gratitude: undefined;
   MindTalk: undefined;
   ArmorShop: undefined;
+  StatusFeed: { myName: string; myMessage: string };
 };
 
 const Stack = createStackNavigator<StudentStackParamList>();
@@ -57,9 +59,15 @@ function HomeRoute({ navigation, route }: StackScreenProps<StudentStackParamList
     <HomeScreen
       onArmorShopPress={() => navigation.navigate('ArmorShop')}
       onMissionPress={handleMissionPress}
+      onStatusFeedPress={(myName, myMessage) => navigation.navigate('StatusFeed', { myName, myMessage })}
       studentName={route.params?.studentName}
     />
   );
+}
+
+/** Stack 라우트 파라미터를 화면이 기대하는 props 형태로 그대로 전달합니다. */
+function StatusFeedRoute({ route }: StackScreenProps<StudentStackParamList, 'StatusFeed'>) {
+  return <StatusFeedScreen myMessage={route.params.myMessage} myName={route.params.myName} />;
 }
 
 /** 기능 화면의 헤더에서 언제든 마이페이지로 돌아갈 수 있는 큰 홈 버튼입니다. */
@@ -100,6 +108,7 @@ export default function StudentNavigator() {
       <Stack.Screen component={GratitudeScreen} name="Gratitude" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '감사 보물상자 🎁' })} />
       <Stack.Screen component={MindTalkScreen} name="MindTalk" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '하늘빛 마음 톡 💬' })} />
       <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '달란트 상점 🛡️' })} />
+      <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '마음 게시판 🌍' })} />
     </Stack.Navigator>
   );
 }

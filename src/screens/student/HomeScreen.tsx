@@ -12,10 +12,11 @@ interface HomeScreenProps {
   studentName?: string;
   onMissionPress?: (mission: StudentMission) => void;
   onArmorShopPress?: () => void;
+  onStatusFeedPress?: (myName: string, myMessage: string) => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress }: HomeScreenProps) {
+export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress }: HomeScreenProps) {
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -33,6 +34,20 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
       Alert.alert('달란트 상점', '상점 화면을 준비하고 있어요 🌸');
     } catch (error) {
       console.warn('달란트 상점으로 이동하는 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
+  /** 상태메시지 카드와 마을 게시판 진입이 같은 콜백을 공유합니다. */
+  const handleStatusFeedPress = () => {
+    try {
+      if (onStatusFeedPress) {
+        onStatusFeedPress(student.name, statusMessage);
+        return;
+      }
+      Alert.alert('마을 게시판', '게시판 화면을 준비하고 있어요 🌸');
+    } catch (error) {
+      console.warn('마을 게시판으로 이동하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
     }
   };
@@ -77,7 +92,7 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
             </View>
           </View>
 
-          <StatusMessageCard message={statusMessage} onSave={setStatusMessage} />
+          <StatusMessageCard message={statusMessage} onSave={setStatusMessage} onViewFeed={handleStatusFeedPress} />
 
           <AvatarCard
             isTalking={isAvatarTalking}

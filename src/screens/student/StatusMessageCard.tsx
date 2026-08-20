@@ -16,6 +16,7 @@ import { BORDER_RADIUS, COLORS, SHADOWS } from '@/constants/theme';
 interface StatusMessageCardProps {
   message: string;
   onSave: (message: string) => void;
+  onViewFeed?: () => void;
 }
 
 const MAX_MESSAGE_LENGTH = 40;
@@ -23,7 +24,7 @@ const MAX_MESSAGE_LENGTH = 40;
 const MOCK_BLOCKED_WORDS = ['바보', '멍청', '죽어', '꺼져', '싫어'];
 
 /** 학생의 신앙 다짐이나 기도제목을 보여 주고 수정하는 카드입니다. */
-export default function StatusMessageCard({ message, onSave }: StatusMessageCardProps) {
+export default function StatusMessageCard({ message, onSave, onViewFeed }: StatusMessageCardProps) {
   // 모달 표시 여부, 작성 중인 문장, 검수 안내를 각각 간단한 상태로 관리합니다.
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [draft, setDraft] = useState(message);
@@ -77,6 +78,16 @@ export default function StatusMessageCard({ message, onSave }: StatusMessageCard
         </Pressable>
       </View>
 
+      {onViewFeed && (
+        <Pressable
+          accessibilityLabel="12명 친구들의 한 줄 다짐 게시판 보기"
+          accessibilityRole="button"
+          onPress={onViewFeed}
+          style={({ pressed }) => [styles.feedLink, pressed && styles.pressed]}>
+          <Text style={styles.feedLinkText}>우리 마을 마음 게시판 보기 🌍</Text>
+        </Pressable>
+      )}
+
       <Modal animationType="fade" onRequestClose={closeEditor} transparent visible={isModalVisible}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
           <View accessibilityViewIsModal style={styles.modalCard}>
@@ -123,6 +134,8 @@ const styles = StyleSheet.create({
   editButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.cardBackground },
   editIcon: { fontSize: 18 },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
+  feedLink: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 4, paddingVertical: 4 },
+  feedLinkText: { color: COLORS.primary, fontSize: 13, fontWeight: '800' },
   modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(41, 42, 45, 0.35)' },
   modalCard: { ...SHADOWS.soft, width: '100%', maxWidth: 420, alignItems: 'center', padding: 24, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.cardBackground },
   modalEmoji: { fontSize: 38 },

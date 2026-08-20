@@ -1,3 +1,5 @@
+export { REACTION_OPTIONS, type ReactionKey } from '@/data/reactions';
+
 /** Supabase 주간 QT 템플릿이 연결되기 전 사용하는 화면용 데이터입니다. */
 export interface DailyQtContent {
   reference: string;
@@ -5,14 +7,6 @@ export interface DailyQtContent {
   teacherMessage: string;
   mockDurationSeconds: number;
 }
-
-export const REACTION_OPTIONS = [
-  { key: 'pray', label: '기도할게 🙏' },
-  { key: 'amen', label: '아멘 🤍' },
-  { key: 'great', label: '멋져요 👍' },
-] as const;
-
-export type ReactionKey = (typeof REACTION_OPTIONS)[number]['key'];
 
 export interface FriendQtPost {
   id: string;
