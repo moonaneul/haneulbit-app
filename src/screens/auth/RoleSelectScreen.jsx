@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { roleSelectStyles as styles } from './roleSelectStyles';
@@ -12,15 +12,6 @@ const ROLES = [
 
 /** 앱을 처음 열었을 때 학생·선생님·부모님 중 누구로 들어갈지 고르는 화면입니다. */
 export default function RoleSelectScreen({ onSelectRole }) {
-  const handlePress = (roleId) => {
-    // 부모님 화면은 아직 준비되지 않아 안내창만 보여 줍니다.
-    if (roleId === 'parent') {
-      Alert.alert('부모님 화면 준비 중이에요 🌸', '조금만 기다려 주시면 곧 만나요!');
-      return;
-    }
-    onSelectRole(roleId);
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -45,7 +36,7 @@ export default function RoleSelectScreen({ onSelectRole }) {
               accessibilityLabel={`${role.title}, ${role.description}`}
               accessibilityRole="button"
               key={role.id}
-              onPress={() => handlePress(role.id)}
+              onPress={() => onSelectRole(role.id)}
               style={({ pressed }) => [styles.roleCard, pressed && styles.roleCardPressed]}>
               <Text style={styles.roleEmoji}>{role.emoji}</Text>
               <View style={styles.roleCopy}>
