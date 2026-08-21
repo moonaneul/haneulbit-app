@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (실제 Supabase 키가 들어가는 .env는 커밋하지 않고, .env.example만 공유합니다)
+.env
 .env*.local
 
 # typescript

@@ -8,6 +8,7 @@
 1. **[`AGENTS.md`](AGENTS.md)** — Expo SDK가 문서 작성 이후 크게 바뀌었다는 경고. **RN/Expo API를 새로 도입하거나 기존 코드에 없는 패턴을 쓸 때는 반드시 `https://docs.expo.dev/versions/v57.0.0/` 최신 문서를 먼저 확인**할 것 (현재 `package.json` 기준 실제 설치 버전은 `expo ~57.0.11`). 이미 코드베이스에 있는 패턴을 그대로 따라 쓸 때는 재확인이 필요 없음.
 2. **[`PROJECT_RULES.md`](PROJECT_RULES.md)** — 앱의 전체 기능 명세, 계정 체계, 안전 지침의 원본.
 3. 이 파일(`CLAUDE.md`) — 코딩 컨벤션과 작업 진행 방식.
+4. **[`supabase/README.md`](supabase/README.md)** — Supabase 스키마(`supabase/schema.sql`)와 클라이언트(`src/lib/supabase.ts`)는 준비돼 있지만, 화면은 아직 실제 프로젝트에 연결되지 않고 Mock 데이터로 동작 중임. 백엔드 연동 작업 전에 반드시 확인.
 
 ## 1. 역할 정의
 
