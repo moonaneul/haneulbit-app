@@ -381,7 +381,9 @@ create table armor_catalog (
   name text not null,
   price int not null,
   description text not null,
-  color_hex text not null
+  color_hex text not null,
+  -- 'bonus' = 성경 인물 특별 아이템, 'seasonal' = 절기 한정판 코스튬, null = 기본 6종
+  tag text check (tag in ('bonus', 'seasonal'))
 );
 
 create table student_armor (

@@ -24,6 +24,7 @@ export const armorShopStyles = StyleSheet.create({
   itemCardMaxTier: { borderColor: COLORS.secondary, backgroundColor: '#FFF8D9' },
   itemEmoji: { fontSize: 42 },
   bonusBadge: { alignSelf: 'flex-start', backgroundColor: COLORS.secondary, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: 10, paddingVertical: 4 },
+  seasonalBadge: { backgroundColor: COLORS.mint },
   bonusText: { color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
   itemName: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 17, fontWeight: '800' },
   itemDescription: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, minHeight: 38 },

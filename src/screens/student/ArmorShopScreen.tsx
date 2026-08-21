@@ -126,8 +126,10 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
               return (
                 <View key={item.id} style={[styles.itemCard, { backgroundColor: item.color }, isMaxTier && styles.itemCardMaxTier]}>
                   <Text style={styles.itemEmoji}>{item.emoji}</Text>
-                  {item.id === 'sling' && (
-                    <View style={styles.bonusBadge}><Text style={styles.bonusText}>특별 보너스 아이템</Text></View>
+                  {item.tag && (
+                    <View style={[styles.bonusBadge, item.tag === 'seasonal' && styles.seasonalBadge]}>
+                      <Text style={styles.bonusText}>{item.tag === 'seasonal' ? '🎉 절기 한정판' : '⭐ 특별 보너스 아이템'}</Text>
+                    </View>
                   )}
                   <Text style={styles.itemName}>{item.name}</Text>
                   <Text style={styles.itemDescription}>{item.description}</Text>
