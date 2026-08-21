@@ -8,6 +8,16 @@ export interface ArmorItem {
   color: string;
 }
 
+/** 기본 -> 실버 -> 골드 -> 빛의 용사 순으로 강화되는 갑주 티어입니다. */
+export const ARMOR_TIERS = [
+  { key: 'basic', label: '기본', badge: '', upgradeCost: 0 },
+  { key: 'silver', label: '실버', badge: '🥈', upgradeCost: 30 },
+  { key: 'gold', label: '골드', badge: '🥇', upgradeCost: 60 },
+  { key: 'light', label: '빛의 용사', badge: '✨', upgradeCost: 100 },
+] as const;
+
+export type ArmorTierKey = (typeof ARMOR_TIERS)[number]['key'];
+
 /** Supabase 연동 전에도 구매 흐름을 확인할 수 있는 상점 Mock 데이터입니다. */
 export const ARMOR_ITEMS: ArmorItem[] = [
   { id: 'helmet', emoji: '🪖', name: '구원의 투구', price: 50, description: '구원의 기쁨으로 생각을 지켜요.', color: '#FFF2C9' },
