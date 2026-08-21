@@ -25,10 +25,11 @@ export const MOCK_STUDENT_STATUSES: TeacherStudentStatus[] = [
   { id: 'student-12', name: '문예준', avatar: '👦🏻', streakDays: 5, didQt: false, didQuiz: false, talentPoints: 260 },
 ];
 
-export type TeacherShortcut = 'template' | 'mindTalk' | 'safety';
+export type TeacherShortcut = 'students' | 'template' | 'mindTalk' | 'safety';
 
 /** 각 관리 기능은 추후 실제 화면으로 연결할 수 있도록 고유 id를 가집니다. */
 export const TEACHER_SHORTCUTS: { id: TeacherShortcut; emoji: string; title: string; description: string; color: string }[] = [
+  { id: 'students', emoji: '👦', title: '학생 계정 관리', description: '새 학생 등록 및 PIN 초기화', color: '#EAF0F6' },
   { id: 'template', emoji: '📝', title: '주간 템플릿 등록', description: 'AI 음성 큐티 & 퀴즈 업로드', color: '#FFF2ED' },
   { id: 'mindTalk', emoji: '💬', title: '1:1 마음 톡 목록', description: '아이들이 보낸 비밀 상담 피드', color: '#FFF1F0' },
   { id: 'safety', emoji: '🚨', title: 'AI 안전 모니터링', description: '비속어 감지 게시글 검수함', color: '#EFF7F4' },

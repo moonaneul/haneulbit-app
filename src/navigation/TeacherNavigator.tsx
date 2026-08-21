@@ -12,12 +12,14 @@ import type { TeacherShortcut } from '@/screens/teacher/teacherHomeData';
 import TeacherMindTalkListScreen from '@/screens/teacher/TeacherMindTalkListScreen';
 import TeacherMindTalkThreadScreen from '@/screens/teacher/TeacherMindTalkThreadScreen';
 import TeacherSafetyMonitorScreen from '@/screens/teacher/TeacherSafetyMonitorScreen';
+import TeacherStudentManageScreen from '@/screens/teacher/TeacherStudentManageScreen';
 import TeacherTemplateScreen from '@/screens/teacher/TeacherTemplateScreen';
 
 /** 선생님용 Stack 화면과 화면별 파라미터를 한곳에서 관리합니다. */
 export type TeacherStackParamList = {
   TeacherLogin: undefined;
   TeacherHome: undefined;
+  TeacherStudentManage: undefined;
   TeacherTemplate: undefined;
   TeacherMindTalkList: undefined;
   TeacherMindTalkThread: { threadId: string };
@@ -35,6 +37,7 @@ function TeacherLoginRoute({ navigation }: StackScreenProps<TeacherStackParamLis
 function TeacherHomeRoute({ navigation }: StackScreenProps<TeacherStackParamList, 'TeacherHome'>) {
   const handleShortcutPress = (shortcut: TeacherShortcut) => {
     const shortcutRoutes = {
+      students: 'TeacherStudentManage',
       template: 'TeacherTemplate',
       mindTalk: 'TeacherMindTalkList',
       safety: 'TeacherSafetyMonitor',
@@ -74,6 +77,7 @@ export default function TeacherNavigator() {
       }}>
       <Stack.Screen component={TeacherLoginRoute} name="TeacherLogin" options={{ headerShown: false }} />
       <Stack.Screen component={TeacherHomeRoute} name="TeacherHome" options={{ headerLeft: () => null, title: '선생님 대시보드 ✝️' }} />
+      <Stack.Screen component={TeacherStudentManageScreen} name="TeacherStudentManage" options={{ title: '학생 계정 관리 👦👧' }} />
       <Stack.Screen component={TeacherTemplateScreen} name="TeacherTemplate" options={{ title: '주간 템플릿 등록 📝' }} />
       <Stack.Screen component={TeacherMindTalkListRoute} name="TeacherMindTalkList" options={{ title: '1:1 마음 톡 💬' }} />
       <Stack.Screen component={TeacherMindTalkThreadRoute} name="TeacherMindTalkThread" options={{ title: '학생과의 대화' }} />
