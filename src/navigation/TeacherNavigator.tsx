@@ -11,9 +11,11 @@ import TeacherHomeScreen from '@/screens/teacher/TeacherHomeScreen';
 import type { TeacherShortcut } from '@/screens/teacher/teacherHomeData';
 import TeacherMindTalkListScreen from '@/screens/teacher/TeacherMindTalkListScreen';
 import TeacherMindTalkThreadScreen from '@/screens/teacher/TeacherMindTalkThreadScreen';
+import TeacherNoticeCalendarManageScreen from '@/screens/teacher/TeacherNoticeCalendarManageScreen';
 import TeacherSafetyMonitorScreen from '@/screens/teacher/TeacherSafetyMonitorScreen';
 import TeacherStudentManageScreen from '@/screens/teacher/TeacherStudentManageScreen';
 import TeacherTemplateScreen from '@/screens/teacher/TeacherTemplateScreen';
+import TeacherVideoManageScreen from '@/screens/teacher/TeacherVideoManageScreen';
 
 /** 선생님용 Stack 화면과 화면별 파라미터를 한곳에서 관리합니다. */
 export type TeacherStackParamList = {
@@ -21,6 +23,8 @@ export type TeacherStackParamList = {
   TeacherHome: undefined;
   TeacherStudentManage: undefined;
   TeacherTemplate: undefined;
+  TeacherNoticeCalendarManage: undefined;
+  TeacherVideoManage: undefined;
   TeacherMindTalkList: undefined;
   TeacherMindTalkThread: { threadId: string };
   TeacherSafetyMonitor: undefined;
@@ -39,6 +43,8 @@ function TeacherHomeRoute({ navigation }: StackScreenProps<TeacherStackParamList
     const shortcutRoutes = {
       students: 'TeacherStudentManage',
       template: 'TeacherTemplate',
+      noticeCalendar: 'TeacherNoticeCalendarManage',
+      video: 'TeacherVideoManage',
       mindTalk: 'TeacherMindTalkList',
       safety: 'TeacherSafetyMonitor',
     } as const;
@@ -79,6 +85,8 @@ export default function TeacherNavigator() {
       <Stack.Screen component={TeacherHomeRoute} name="TeacherHome" options={{ headerLeft: () => null, title: '선생님 대시보드 ✝️' }} />
       <Stack.Screen component={TeacherStudentManageScreen} name="TeacherStudentManage" options={{ title: '학생 계정 관리 👦👧' }} />
       <Stack.Screen component={TeacherTemplateScreen} name="TeacherTemplate" options={{ title: '주간 템플릿 등록 📝' }} />
+      <Stack.Screen component={TeacherNoticeCalendarManageScreen} name="TeacherNoticeCalendarManage" options={{ title: '알림장 & 캘린더 관리 📖' }} />
+      <Stack.Screen component={TeacherVideoManageScreen} name="TeacherVideoManage" options={{ title: '영상 등록 관리 🎬' }} />
       <Stack.Screen component={TeacherMindTalkListRoute} name="TeacherMindTalkList" options={{ title: '1:1 마음 톡 💬' }} />
       <Stack.Screen component={TeacherMindTalkThreadRoute} name="TeacherMindTalkThread" options={{ title: '학생과의 대화' }} />
       <Stack.Screen component={TeacherSafetyMonitorScreen} name="TeacherSafetyMonitor" options={{ title: 'AI 안전 모니터링 🚨' }} />
