@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { BORDER_RADIUS, COLORS, SHADOWS } from '@/constants/theme';
+import { containsUnsafeLanguage } from '@/data/contentSafety';
 
 interface StatusMessageCardProps {
   message: string;
@@ -20,8 +21,6 @@ interface StatusMessageCardProps {
 }
 
 const MAX_MESSAGE_LENGTH = 40;
-// 실제 AI가 연결되기 전, 입력 안전 흐름을 시험하기 위한 Mock 금칙어 목록입니다.
-const MOCK_BLOCKED_WORDS = ['바보', '멍청', '죽어', '꺼져', '싫어'];
 
 /** 학생의 신앙 다짐이나 기도제목을 보여 주고 수정하는 카드입니다. */
 export default function StatusMessageCard({ message, onSave, onViewFeed }: StatusMessageCardProps) {
@@ -46,7 +45,7 @@ export default function StatusMessageCard({ message, onSave, onViewFeed }: Statu
         setGuide('한 줄 다짐이나 기도제목을 적어 주세요 🕊️');
         return;
       }
-      const hasBlockedWord = MOCK_BLOCKED_WORDS.some((word) => cleanedMessage.includes(word));
+      const hasBlockedWord = containsUnsafeLanguage(cleanedMessage);
       if (hasBlockedWord) {
         setGuide('예쁜 말로 바꿔볼까요? 🌸');
         Alert.alert('우리의 말을 예쁘게 가꿔요', '예쁜 말로 바꿔볼까요? 🌸');

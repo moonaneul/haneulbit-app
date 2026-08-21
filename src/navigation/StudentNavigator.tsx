@@ -11,7 +11,9 @@ import ArmorShopScreen from '@/screens/student/ArmorShopScreen';
 import GratitudeScreen from '@/screens/student/GratitudeScreen';
 import HomeScreen from '@/screens/student/HomeScreen';
 import type { StudentMission } from '@/screens/student/homeData';
+import ManitoScreen from '@/screens/student/ManitoScreen';
 import MindTalkScreen from '@/screens/student/MindTalkScreen';
+import MonthlyCalendarScreen from '@/screens/student/MonthlyCalendarScreen';
 import NoticeCalendarScreen from '@/screens/student/NoticeCalendarScreen';
 import QtScreen from '@/screens/student/QtScreen';
 import StatusFeedScreen from '@/screens/student/StatusFeedScreen';
@@ -29,6 +31,8 @@ export type StudentStackParamList = {
   ArmorShop: undefined;
   StatusFeed: { myName: string; myMessage: string };
   NoticeCalendar: undefined;
+  MonthlyCalendar: undefined;
+  Manito: undefined;
 };
 
 const Stack = createStackNavigator<StudentStackParamList>();
@@ -61,6 +65,8 @@ function HomeRoute({ navigation, route }: StackScreenProps<StudentStackParamList
     <HomeScreen
       onArmorShopPress={() => navigation.navigate('ArmorShop')}
       onMissionPress={handleMissionPress}
+      onManitoPress={() => navigation.navigate('Manito')}
+      onMonthlyCalendarPress={() => navigation.navigate('MonthlyCalendar')}
       onNoticeCalendarPress={() => navigation.navigate('NoticeCalendar')}
       onStatusFeedPress={(myName, myMessage) => navigation.navigate('StatusFeed', { myName, myMessage })}
       studentName={route.params?.studentName}
@@ -113,6 +119,8 @@ export default function StudentNavigator() {
       <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '달란트 상점 🛡️' })} />
       <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '마음 게시판 🌍' })} />
       <Stack.Screen component={NoticeCalendarScreen} name="NoticeCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '알림장 & 캘린더 📖' })} />
+      <Stack.Screen component={MonthlyCalendarScreen} name="MonthlyCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '만나 스티커 달력 🍞' })} />
+      <Stack.Screen component={ManitoScreen} name="Manito" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '비밀 마니또 🤫' })} />
     </Stack.Navigator>
   );
 }

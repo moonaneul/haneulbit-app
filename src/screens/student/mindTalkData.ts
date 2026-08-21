@@ -23,8 +23,4 @@ export const MOCK_MIND_TALK_MESSAGES: MindTalkMessage[] = [
   },
 ];
 
-// 실제 AI 검수 전, 자주 쓰이는 공격적 표현을 기기 안에서 먼저 확인합니다.
-const UNSAFE_WORDS = ['바보', '멍청', '꺼져', '죽어', '싫어 죽겠어'];
-
-export const containsUnsafeLanguage = (text: string) =>
-  UNSAFE_WORDS.some((word) => text.replace(/\s/g, '').includes(word.replace(/\s/g, '')));
+export { containsUnsafeLanguage } from '@/data/contentSafety';

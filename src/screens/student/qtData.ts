@@ -1,3 +1,4 @@
+export { containsUnsafeLanguage } from '@/data/contentSafety';
 export { REACTION_OPTIONS, type ReactionKey } from '@/data/reactions';
 
 /** Supabase 주간 QT 템플릿이 연결되기 전 사용하는 화면용 데이터입니다. */
@@ -40,12 +41,3 @@ export const MOCK_FRIEND_QT_POSTS: FriendQtPost[] = [
     reflection: '친구가 어려울 때 먼저 다가가 도와주는 사람이 되고 싶어요! 💛',
   },
 ];
-
-// 실제 서비스에서는 이 목록을 서버의 AI 언어 감지 결과와 함께 사용합니다.
-const BLOCKED_WORDS = ['바보', '멍청', '죽어', '꺼져', '시발', '씨발'];
-
-/** 띄어쓰기로 필터를 피하지 못하도록 공백을 제거한 뒤 1차 확인합니다. */
-export function containsUnsafeLanguage(value: string) {
-  const normalized = value.toLowerCase().replace(/\s/g, '');
-  return BLOCKED_WORDS.some((word) => normalized.includes(word));
-}

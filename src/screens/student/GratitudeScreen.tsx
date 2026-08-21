@@ -1,9 +1,25 @@
 import { useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { containsUnsafeLanguage, MOCK_GRATITUDE_POSTS, REACTION_OPTIONS, type ReactionKey } from './gratitudeData';
+import {
+  containsUnsafeLanguage,
+  MOCK_GRATITUDE_POSTS,
+  MOCK_VIDEOS,
+  REACTION_OPTIONS,
+  type ReactionKey,
+  type RecommendedVideo,
+  type VideoCategory,
+} from './gratitudeData';
 import { gratitudeStyles as styles } from './gratitudeStyles';
+
+type GratitudeTab = 'gratitude' | 'media';
+
+const VIDEO_CATEGORIES: { key: VideoCategory | 'all'; label: string }[] = [
+  { key: 'all', label: '전체' },
+  { key: 'dance', label: '🕺 율동' },
+  { key: 'bible', label: '📖 성경 이야기' },
+];
 
 interface GratitudeScreenProps { onBack?: () => void }
 
@@ -18,6 +34,9 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
     Object.fromEntries(MOCK_GRATITUDE_POSTS.map((post) => [post.id, post.reactions])),
   );
   const [myReactions, setMyReactions] = useState<Record<string, ReactionKey[]>>({});
+  // 감사 보물상자와 율동/성경 영상 탭을 같은 화면 안에서 전환합니다.
+  const [activeTab, setActiveTab] = useState<GratitudeTab>('gratitude');
+  const [videoCategory, setVideoCategory] = useState<VideoCategory | 'all'>('all');
 
   const todayLabel = useMemo(() => new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
@@ -52,6 +71,20 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
     }
   };
 
+  const filteredVideos = videoCategory === 'all'
+    ? MOCK_VIDEOS
+    : MOCK_VIDEOS.filter((video) => video.category === videoCategory);
+
+  /** 선생님이 추천한 영상을 유튜브 앱/브라우저에서 바로 열어 줍니다. */
+  const handleOpenVideo = async (video: RecommendedVideo) => {
+    try {
+      await Linking.openURL(video.youtubeUrl);
+    } catch (error) {
+      console.warn('추천 영상을 여는 중 오류가 발생했습니다.', error);
+      Alert.alert('영상을 열지 못했어요', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
   /** 한 게시물의 같은 스티커는 한 번만 누를 수 있고, 누르면 즉시 수량을 올립니다. */
   const handleReaction = (postId: string, key: ReactionKey) => {
     if (myReactions[postId]?.includes(key)) return;
@@ -70,37 +103,95 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
             {onBack && <Pressable accessibilityRole="button" onPress={onBack} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}><Text style={styles.backText}>← 돌아가기</Text></Pressable>}
             <View style={styles.header}><Text style={styles.title}>오늘의 감사 보물상자 📸</Text><Text style={styles.date}>{todayLabel}</Text></View>
 
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>오늘 감사했던 순간을 담아요</Text>
-              <Text style={styles.sectionGuide}>작고 소중한 순간도 하나님께 드리는 멋진 감사예요.</Text>
-              <View accessibilityLabel={photo.caption} style={styles.photoPreview}><Text style={styles.photoEmoji}>{photo.emoji}</Text><Text style={styles.photoCaption}>{photo.caption}</Text></View>
-              <View style={styles.photoButtons}>
-                <Pressable accessibilityRole="button" onPress={() => handlePhotoChoice('camera')} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>📷 사진 촬영</Text></Pressable>
-                <Pressable accessibilityRole="button" onPress={() => handlePhotoChoice('album')} style={({ pressed }) => [styles.photoButton, styles.photoButtonAlt, pressed && styles.pressed]}><Text style={styles.photoButtonText}>🖼️ 앨범 선택</Text></Pressable>
-              </View>
+            <View style={styles.tabRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeTab === 'gratitude' }}
+                onPress={() => setActiveTab('gratitude')}
+                style={[styles.tabButton, activeTab === 'gratitude' && styles.tabButtonActive]}>
+                <Text style={[styles.tabText, activeTab === 'gratitude' && styles.tabTextActive]}>📸 감사 보물상자</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeTab === 'media' }}
+                onPress={() => setActiveTab('media')}
+                style={[styles.tabButton, activeTab === 'media' && styles.tabButtonActive]}>
+                <Text style={[styles.tabText, activeTab === 'media' && styles.tabTextActive]}>🎬 율동 & 성경 영상</Text>
+              </Pressable>
             </View>
 
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>무엇이 감사했나요?</Text>
-              <TextInput accessibilityLabel="한 줄 감사 제목" maxLength={80} onChangeText={setTitle} onSubmitEditing={handleSave} placeholder="오늘 맛있는 점심을 먹어서 감사해요! 🍕" placeholderTextColor="#96918A" returnKeyType="done" style={styles.input} value={title} />
-              <Text style={styles.safeHint}>🌸 친구의 마음도 기뻐지는 예쁜 말로 적어 보아요. {title.length}/80</Text>
-              <Pressable accessibilityRole="button" disabled={!canSave} onPress={handleSave} style={({ pressed }) => [styles.saveButton, !canSave && styles.saveDisabled, pressed && styles.pressed]}><Text style={styles.saveText}>보물상자에 저장하기 (+10 달란트 🪙)</Text></Pressable>
-            </View>
-
-            <View style={styles.feedHeader}><Text style={styles.sectionTitle}>친구들의 감사 보물 ✨</Text><Text style={styles.sectionGuide}>따뜻한 응원 스티커를 선물해 보아요.</Text></View>
-            {MOCK_GRATITUDE_POSTS.map((post) => (
-              <View key={post.id} style={styles.feedCard}>
-                <View style={[styles.feedPhoto, { backgroundColor: post.photoColor }]}><Text style={styles.feedEmoji}>{post.photoEmoji}</Text></View>
-                <View style={styles.feedBody}>
-                  <View style={styles.friendRow}><Text style={styles.avatar}>{post.avatar}</Text><Text style={styles.friendName}>{post.name}</Text></View>
-                  <Text style={styles.postTitle}>{post.title}</Text>
-                  <View style={styles.reactionRow}>{REACTION_OPTIONS.map((reaction) => {
-                    const selected = myReactions[post.id]?.includes(reaction.key);
-                    return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={reaction.key} onPress={() => handleReaction(post.id, reaction.key)} style={({ pressed }) => [styles.reactionButton, selected && styles.reactionSelected, pressed && styles.pressed]}><Text style={styles.reactionText}>{reaction.label} {reactionCounts[post.id][reaction.key]}</Text></Pressable>;
-                  })}</View>
+            {activeTab === 'gratitude' ? (
+              <>
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>오늘 감사했던 순간을 담아요</Text>
+                  <Text style={styles.sectionGuide}>작고 소중한 순간도 하나님께 드리는 멋진 감사예요.</Text>
+                  <View accessibilityLabel={photo.caption} style={styles.photoPreview}><Text style={styles.photoEmoji}>{photo.emoji}</Text><Text style={styles.photoCaption}>{photo.caption}</Text></View>
+                  <View style={styles.photoButtons}>
+                    <Pressable accessibilityRole="button" onPress={() => handlePhotoChoice('camera')} style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}><Text style={styles.photoButtonText}>📷 사진 촬영</Text></Pressable>
+                    <Pressable accessibilityRole="button" onPress={() => handlePhotoChoice('album')} style={({ pressed }) => [styles.photoButton, styles.photoButtonAlt, pressed && styles.pressed]}><Text style={styles.photoButtonText}>🖼️ 앨범 선택</Text></Pressable>
+                  </View>
                 </View>
-              </View>
-            ))}
+
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>무엇이 감사했나요?</Text>
+                  <TextInput accessibilityLabel="한 줄 감사 제목" maxLength={80} onChangeText={setTitle} onSubmitEditing={handleSave} placeholder="오늘 맛있는 점심을 먹어서 감사해요! 🍕" placeholderTextColor="#96918A" returnKeyType="done" style={styles.input} value={title} />
+                  <Text style={styles.safeHint}>🌸 친구의 마음도 기뻐지는 예쁜 말로 적어 보아요. {title.length}/80</Text>
+                  <Pressable accessibilityRole="button" disabled={!canSave} onPress={handleSave} style={({ pressed }) => [styles.saveButton, !canSave && styles.saveDisabled, pressed && styles.pressed]}><Text style={styles.saveText}>보물상자에 저장하기 (+10 달란트 🪙)</Text></Pressable>
+                </View>
+
+                <View style={styles.feedHeader}><Text style={styles.sectionTitle}>친구들의 감사 보물 ✨</Text><Text style={styles.sectionGuide}>따뜻한 응원 스티커를 선물해 보아요.</Text></View>
+                {MOCK_GRATITUDE_POSTS.map((post) => (
+                  <View key={post.id} style={styles.feedCard}>
+                    <View style={[styles.feedPhoto, { backgroundColor: post.photoColor }]}><Text style={styles.feedEmoji}>{post.photoEmoji}</Text></View>
+                    <View style={styles.feedBody}>
+                      <View style={styles.friendRow}><Text style={styles.avatar}>{post.avatar}</Text><Text style={styles.friendName}>{post.name}</Text></View>
+                      <Text style={styles.postTitle}>{post.title}</Text>
+                      <View style={styles.reactionRow}>{REACTION_OPTIONS.map((reaction) => {
+                        const selected = myReactions[post.id]?.includes(reaction.key);
+                        return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={reaction.key} onPress={() => handleReaction(post.id, reaction.key)} style={({ pressed }) => [styles.reactionButton, selected && styles.reactionSelected, pressed && styles.pressed]}><Text style={styles.reactionText}>{reaction.label} {reactionCounts[post.id][reaction.key]}</Text></Pressable>;
+                      })}</View>
+                    </View>
+                  </View>
+                ))}
+              </>
+            ) : (
+              <>
+                <View style={styles.categoryRow}>
+                  {VIDEO_CATEGORIES.map((category) => (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: videoCategory === category.key }}
+                      key={category.key}
+                      onPress={() => setVideoCategory(category.key)}
+                      style={[styles.categoryChip, videoCategory === category.key && styles.categoryChipActive]}>
+                      <Text style={[styles.categoryChipText, videoCategory === category.key && styles.categoryChipTextActive]}>
+                        {category.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                {filteredVideos.map((video) => (
+                  <Pressable
+                    accessibilityLabel={`${video.title}, ${video.duration}, 유튜브에서 보기`}
+                    accessibilityRole="button"
+                    key={video.id}
+                    onPress={() => handleOpenVideo(video)}
+                    style={({ pressed }) => [styles.videoCard, pressed && styles.pressed]}>
+                    <View style={[styles.videoThumb, { backgroundColor: video.thumbnailColor }]}>
+                      <Text style={styles.videoThumbEmoji}>{video.thumbnailEmoji}</Text>
+                    </View>
+                    <View style={styles.videoBody}>
+                      <View style={styles.videoCategoryBadge}>
+                        <Text style={styles.videoCategoryText}>{video.category === 'dance' ? '🕺 율동' : '📖 성경 이야기'}</Text>
+                      </View>
+                      <Text style={styles.videoTitle}>{video.title}</Text>
+                      <Text style={styles.videoDuration}>⏱ {video.duration}</Text>
+                    </View>
+                    <View style={styles.videoPlayButton}><Text style={styles.videoPlayIcon}>▶️</Text></View>
+                  </Pressable>
+                ))}
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -47,6 +47,7 @@ export const homeStyles = StyleSheet.create({
   missionDescription: { color: COLORS.textSecondary, fontSize: 11, lineHeight: 16, fontWeight: '700', marginTop: 3, paddingRight: 16 },
   missionArrow: { position: 'absolute', right: 16, bottom: 14, color: COLORS.textPrimary, fontSize: 19, fontWeight: '900' },
   noticeBanner: { ...SHADOWS.soft, flexDirection: 'row', alignItems: 'center', marginTop: 14, padding: 16, borderRadius: BORDER_RADIUS.card, backgroundColor: '#FFF8E4' },
+  manitoBanner: { backgroundColor: '#EEEAFB' },
   noticeBannerPressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
   noticeBannerEmoji: { fontSize: 26, marginRight: 13 },
   noticeBannerCopy: { flex: 1 },

@@ -14,10 +14,12 @@ interface HomeScreenProps {
   onArmorShopPress?: () => void;
   onStatusFeedPress?: (myName: string, myMessage: string) => void;
   onNoticeCalendarPress?: () => void;
+  onMonthlyCalendarPress?: () => void;
+  onManitoPress?: () => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress }: HomeScreenProps) {
+export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress, onMonthlyCalendarPress, onManitoPress }: HomeScreenProps) {
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -67,6 +69,34 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
     }
   };
 
+  /** 연속 출석 배지를 누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다. */
+  const handleMonthlyCalendarPress = () => {
+    try {
+      if (onMonthlyCalendarPress) {
+        onMonthlyCalendarPress();
+        return;
+      }
+      Alert.alert('만나 스티커 달력', '화면을 준비하고 있어요 🌸');
+    } catch (error) {
+      console.warn('만나 스티커 달력으로 이동하는 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
+  /** 비밀 마니또 배너는 아직 콜백이 없으면 준비 중 안내창을 보여 줍니다. */
+  const handleManitoPress = () => {
+    try {
+      if (onManitoPress) {
+        onManitoPress();
+        return;
+      }
+      Alert.alert('비밀 마니또', '화면을 준비하고 있어요 🌸');
+    } catch (error) {
+      console.warn('비밀 마니또로 이동하는 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
   // 아직 실제 화면이 없는 미션은 친근한 안내창으로 터치 동작을 확인합니다.
   const handleMissionPress = (mission: StudentMission) => {
     try {
@@ -95,7 +125,14 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
               </View>
             </View>
             <View style={styles.statsRow}>
-              <View style={styles.statBadge}><Text style={styles.statText}>🔥 {student.streakDays}일</Text></View>
+              <Pressable
+                accessibilityHint="누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다"
+                accessibilityLabel={`연속 ${student.streakDays}일 출석, 만나 스티커 달력 가기`}
+                accessibilityRole="button"
+                onPress={handleMonthlyCalendarPress}
+                style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
+                <Text style={styles.statText}>🔥 {student.streakDays}일</Text>
+              </Pressable>
               <Pressable
                 accessibilityHint="누르면 전신갑주를 구매할 수 있는 상점으로 이동합니다"
                 accessibilityLabel={`내 달란트 ${student.talentPoints}포인트, 달란트 상점 가기`}
@@ -125,6 +162,19 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
             <View style={styles.noticeBannerCopy}>
               <Text style={styles.noticeBannerTitle}>알림장 & 캘린더</Text>
               <Text style={styles.noticeBannerDescription}>선생님 공지사항과 이번 달 일정을 확인해요</Text>
+            </View>
+            <Text style={styles.noticeBannerArrow}>›</Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityLabel="비밀 마니또, 이번 주 마니또에게 몰래 기도 배달하기"
+            accessibilityRole="button"
+            onPress={handleManitoPress}
+            style={({ pressed }) => [styles.noticeBanner, styles.manitoBanner, pressed && styles.noticeBannerPressed]}>
+            <Text style={styles.noticeBannerEmoji}>🤫</Text>
+            <View style={styles.noticeBannerCopy}>
+              <Text style={styles.noticeBannerTitle}>비밀 마니또</Text>
+              <Text style={styles.noticeBannerDescription}>이번 주 마니또에게 몰래 기도를 배달해요</Text>
             </View>
             <Text style={styles.noticeBannerArrow}>›</Text>
           </Pressable>
