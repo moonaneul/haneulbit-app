@@ -55,7 +55,6 @@ export default function ParentLoginScreen({ onLoginSuccess }) {
           <GlassCard style={styles.card}>
             <Text style={styles.eyebrow}>PARENT</Text>
             <Text style={styles.title}>부모님, 안녕하세요 🏡</Text>
-            <Text style={styles.subtitle}>휴대폰 번호와 자녀 연동 코드로 들어가요</Text>
 
             <Text style={styles.label}>휴대폰 번호</Text>
             <TextInput

@@ -15,7 +15,6 @@ export default function MissionGrid({ missions, onMissionPress }: MissionGridPro
     <View>
       <View style={styles.missionHeader}>
         <Text style={styles.sectionTitle}>오늘의 하늘빛 미션</Text>
-        <Text style={styles.sectionCaption}>하나씩 즐겁게 시작해 봐요!</Text>
       </View>
       <View style={styles.missionGrid}>
         {missions.map((mission) => (

@@ -74,7 +74,6 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>핵심 관리 기능</Text>
-            <Text style={styles.sectionCaption}>자주 쓰는 선생님 메뉴를 빠르게 열어 보세요.</Text>
           </View>
           <View style={styles.shortcutList}>
             {TEACHER_SHORTCUTS.map((item) => (

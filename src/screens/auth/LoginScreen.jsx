@@ -83,10 +83,7 @@ export default function LoginScreen({ onLoginSuccess }) {
 
           <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <View>
-                <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
-                <Text style={styles.sectionCaption}>내 이름을 고르거나 직접 입력해요</Text>
-              </View>
+              <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.studentRow}>
               {MOCK_STUDENTS.map((student) => (
@@ -118,10 +115,7 @@ export default function LoginScreen({ onLoginSuccess }) {
             />
 
             <View style={[styles.sectionHeader, styles.pinHeader]}>
-              <View>
-                <Text style={styles.sectionTitle}>비밀 번호 4자리</Text>
-                <Text style={styles.sectionCaption}>숫자를 누르면 별이 하나씩 나타나요</Text>
-              </View>
+              <Text style={styles.sectionTitle}>비밀 번호 4자리</Text>
             </View>
             <AnimatedPinFeedback pinLength={pin.length} />
             <PinKeypad disabled={isLoggingIn} onDelete={handleDelete} onNumberPress={handleNumberPress} />

@@ -54,7 +54,6 @@ export default function TeacherLoginScreen({ onLoginSuccess }) {
           <GlassCard style={styles.card}>
             <Text style={styles.eyebrow}>TEACHER ADMIN</Text>
             <Text style={styles.title}>선생님, 안녕하세요 ✝️</Text>
-            <Text style={styles.subtitle}>관리자 비밀번호를 입력하고 대시보드로 들어가요</Text>
 
             <Text style={styles.label}>관리자 비밀번호</Text>
             <TextInput
