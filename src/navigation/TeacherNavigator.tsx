@@ -82,14 +82,14 @@ export default function TeacherNavigator() {
         headerTitleAlign: 'center',
       }}>
       <Stack.Screen component={TeacherLoginRoute} name="TeacherLogin" options={{ headerShown: false }} />
-      <Stack.Screen component={TeacherHomeRoute} name="TeacherHome" options={{ headerLeft: () => null, title: '선생님 대시보드 ✝️' }} />
-      <Stack.Screen component={TeacherStudentManageScreen} name="TeacherStudentManage" options={{ title: '학생 계정 관리 👦👧' }} />
-      <Stack.Screen component={TeacherTemplateScreen} name="TeacherTemplate" options={{ title: '주간 템플릿 등록 📝' }} />
-      <Stack.Screen component={TeacherNoticeCalendarManageScreen} name="TeacherNoticeCalendarManage" options={{ title: '알림장 & 캘린더 관리 📖' }} />
-      <Stack.Screen component={TeacherVideoManageScreen} name="TeacherVideoManage" options={{ title: '영상 등록 관리 🎬' }} />
-      <Stack.Screen component={TeacherMindTalkListRoute} name="TeacherMindTalkList" options={{ title: '1:1 마음 톡 💬' }} />
-      <Stack.Screen component={TeacherMindTalkThreadRoute} name="TeacherMindTalkThread" options={{ title: '학생과의 대화' }} />
-      <Stack.Screen component={TeacherSafetyMonitorScreen} name="TeacherSafetyMonitor" options={{ title: 'AI 안전 모니터링 🚨' }} />
+      <Stack.Screen component={TeacherHomeRoute} name="TeacherHome" options={{ headerShown: false }} />
+      <Stack.Screen component={TeacherStudentManageScreen} name="TeacherStudentManage" options={{ title: '' }} />
+      <Stack.Screen component={TeacherTemplateScreen} name="TeacherTemplate" options={{ title: '' }} />
+      <Stack.Screen component={TeacherNoticeCalendarManageScreen} name="TeacherNoticeCalendarManage" options={{ title: '' }} />
+      <Stack.Screen component={TeacherVideoManageScreen} name="TeacherVideoManage" options={{ title: '' }} />
+      <Stack.Screen component={TeacherMindTalkListRoute} name="TeacherMindTalkList" options={{ title: '' }} />
+      <Stack.Screen component={TeacherMindTalkThreadRoute} name="TeacherMindTalkThread" options={{ title: '' }} />
+      <Stack.Screen component={TeacherSafetyMonitorScreen} name="TeacherSafetyMonitor" options={{ title: '' }} />
     </Stack.Navigator>
   );
 }

@@ -54,10 +54,10 @@ export default function ParentNavigator() {
         headerTitleAlign: 'center',
       }}>
       <Stack.Screen component={ParentLoginRoute} name="ParentLogin" options={{ headerShown: false }} />
-      <Stack.Screen component={ParentHomeRoute} name="ParentHome" options={{ headerLeft: () => null, title: '부모님 홈 🏡' }} />
-      <Stack.Screen component={ParentReportScreen} name="ParentReport" options={{ title: '영적 자람 리포트 🌱' }} />
-      <Stack.Screen component={ParentNoticeCalendarScreen} name="ParentNoticeCalendar" options={{ title: '알림장 & 캘린더 📖' }} />
-      <Stack.Screen component={ParentMissionApprovalScreen} name="ParentMissionApproval" options={{ title: '가정 실천 미션 도장 ✅' }} />
+      <Stack.Screen component={ParentHomeRoute} name="ParentHome" options={{ headerShown: false }} />
+      <Stack.Screen component={ParentReportScreen} name="ParentReport" options={{ title: '' }} />
+      <Stack.Screen component={ParentNoticeCalendarScreen} name="ParentNoticeCalendar" options={{ title: '' }} />
+      <Stack.Screen component={ParentMissionApprovalScreen} name="ParentMissionApproval" options={{ title: '' }} />
     </Stack.Navigator>
   );
 }

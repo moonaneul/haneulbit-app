@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
+import { useArmor } from '@/context/ArmorProvider';
 
 import {
   containsUnsafeLanguage,
@@ -26,6 +27,7 @@ interface GratitudeScreenProps { onBack?: () => void }
 
 /** 오늘의 감사 사진을 기록하고 친구에게 정해진 응원을 보내는 화면입니다. */
 export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
+  const { earn } = useArmor();
   // 사진 패키지를 연결하기 전에도 선택 흐름을 확인할 수 있도록 예시 사진을 바꿉니다.
   const [photo, setPhoto] = useState({ emoji: '☀️', caption: '오늘의 감사 순간' });
   const [title, setTitle] = useState('');
@@ -64,6 +66,7 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
         setIsSafetyModalVisible(true);
         return;
       }
+      earn(10);
       Alert.alert('보물상자에 쏙! 🎁', '감사 기록을 저장하고 +10 달란트를 받았어요 🪙');
       setTitle('');
     } catch (error) {

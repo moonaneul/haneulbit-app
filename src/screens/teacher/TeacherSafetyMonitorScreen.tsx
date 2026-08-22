@@ -40,12 +40,6 @@ export default function TeacherSafetyMonitorScreen() {
             <Text style={styles.caption}>AI가 먼저 걸러낸 글이에요. 선생님이 마지막으로 봐 주세요.</Text>
           </View>
 
-          <View style={styles.infoCard}>
-            <Text style={styles.infoText}>
-              💡 실제 서비스에서는 이 목록이 서버의 AI Moderation 결과와 함께 표시돼요. 지금은 클라이언트 1차 필터를 통과하지 못한 예시 글을 보여줘요.
-            </Text>
-          </View>
-
           <View style={styles.tabRow}>
             <Pressable
               accessibilityRole="button"

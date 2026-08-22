@@ -2,19 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
+import { useArmor } from '@/context/ArmorProvider';
 
 import { TODAY_WWJD_QUIZ, type QuizChoice } from './wwjdQuizData';
 import { wwjdQuizStyles as styles } from './wwjdQuizStyles';
 
 interface WwjdQuizScreenProps {
-  initialTalents?: number;
   onBack?: () => void;
 }
 
 type QuizStep = 1 | 2;
 
 /** 학생이 행동과 말씀을 차례로 연결하며 배우는 2단계 WWJD 퀴즈 화면입니다. */
-export default function WwjdQuizScreen({ initialTalents = 150, onBack }: WwjdQuizScreenProps) {
+export default function WwjdQuizScreen({ onBack }: WwjdQuizScreenProps) {
+  // 달란트는 상점·홈과 같은 값을 봐야 해서 ArmorProvider에서 가져옵니다.
+  const { talents, earn } = useArmor();
   // 현재 단계, 획득 점수, 힌트와 최종 보상 팝업을 각각 관리합니다.
   const [step, setStep] = useState<QuizStep>(1);
   const [score, setScore] = useState(0);
@@ -49,6 +51,7 @@ export default function WwjdQuizScreen({ initialTalents = 150, onBack }: WwjdQui
         return;
       }
 
+      earn(20); // 1·2단계 각 10달란트
       setIsRewardVisible(true);
       Animated.spring(rewardScale, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start();
     } catch (error) {
@@ -71,7 +74,7 @@ export default function WwjdQuizScreen({ initialTalents = 150, onBack }: WwjdQui
                 <Text style={styles.backText}>← 돌아가기</Text>
               </Pressable>
             ) : <View />}
-            <View style={styles.scoreBadge}><Text style={styles.scoreText}>⭐ {score}점 · 🪙 {initialTalents + score}</Text></View>
+            <View style={styles.scoreBadge}><Text style={styles.scoreText}>⭐ {score}점 · 🪙 {talents}</Text></View>
           </View>
 
           <Text style={styles.title}>예수님이라면 어떻게 하실까? 🚦</Text>

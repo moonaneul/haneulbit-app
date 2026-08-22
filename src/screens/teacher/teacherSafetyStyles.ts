@@ -9,8 +9,6 @@ export const teacherSafetyStyles = StyleSheet.create({
   header: { marginBottom: 16 },
   title: { fontFamily: Fonts.display, color: COLORS.textPrimary, fontSize: 22 },
   caption: { fontFamily: Fonts.sans, marginTop: 5, color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '600' },
-  infoCard: { ...SHADOWS.soft, padding: 16, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.accentSoft, marginBottom: 18 },
-  infoText: { fontFamily: Fonts.sans, color: COLORS.textPrimary, fontSize: 12, lineHeight: 18, fontWeight: '700' },
   tabRow: { flexDirection: 'row', gap: 8, marginBottom: 18, padding: 5, borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.surfaceMuted },
   tabButton: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: BORDER_RADIUS.badge },
   tabButtonActive: { ...SHADOWS.soft, backgroundColor: COLORS.cardBackground },

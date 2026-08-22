@@ -25,12 +25,12 @@ export default function SkyScene({ children, showHills = true }: SkySceneProps) 
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 하늘에 옅게 떠 있는 구름 */}
+      {/* 하늘에 옅게 떠 있는 구름
+          — 글자가 놓이는 자리와 겹쳐 지저분해 보이지 않도록 아주 옅게만 깔아 둡니다. */}
       <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Ellipse cx="18%" cy="12%" rx="16%" ry="4%" fill={SCENE.cloud} opacity={0.75} />
-        <Ellipse cx="26%" cy="14%" rx="11%" ry="3%" fill={SCENE.cloud} opacity={0.6} />
-        <Ellipse cx="82%" cy="22%" rx="18%" ry="4.5%" fill={SCENE.cloud} opacity={0.6} />
-        <Ellipse cx="70%" cy="7%" rx="12%" ry="3%" fill={SCENE.cloud} opacity={0.45} />
+        <Ellipse cx="16%" cy="6%" rx="15%" ry="3.5%" fill={SCENE.cloud} opacity={0.35} />
+        <Ellipse cx="84%" cy="15%" rx="17%" ry="4%" fill={SCENE.cloud} opacity={0.28} />
+        <Ellipse cx="62%" cy="4%" rx="11%" ry="2.6%" fill={SCENE.cloud} opacity={0.22} />
       </Svg>
 
       {/* 화면 아래쪽에 완만하게 깔리는 언덕 */}

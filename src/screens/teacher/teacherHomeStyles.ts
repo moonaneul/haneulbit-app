@@ -4,7 +4,7 @@ import { BORDER_RADIUS, COLORS, Fonts, MaxContentWidth, SHADOWS } from '@/consta
 
 export const teacherHomeStyles = StyleSheet.create({
   safeArea: { flex: 1 },
-  scrollContent: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 48 },
+  scrollContent: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 22, paddingBottom: 48 },
   content: { width: '100%', maxWidth: MaxContentWidth },
   summaryCard: { ...SHADOWS.soft, padding: 22, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.primarySoft },
   eyebrow: { fontFamily: Fonts.sans, color: COLORS.primary, fontSize: 12, fontWeight: '900' },

@@ -4,7 +4,7 @@ import { BORDER_RADIUS, COLORS, Fonts, MaxContentWidth, SHADOWS } from '@/consta
 
 export const parentHomeStyles = StyleSheet.create({
   safeArea: { flex: 1 },
-  scrollContent: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 48 },
+  scrollContent: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 22, paddingBottom: 48 },
   content: { width: '100%', maxWidth: MaxContentWidth },
   childCard: { ...SHADOWS.soft, flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.primarySoft, marginBottom: 24 },
   avatarCircle: { width: 60, height: 60, alignItems: 'center', justifyContent: 'center', borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.cardBackground },

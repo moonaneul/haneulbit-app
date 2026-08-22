@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
+import { useArmor } from '@/context/ArmorProvider';
 
 import { QtFriendFeed } from './QtFriendFeed';
 import { containsUnsafeLanguage, TODAY_QT } from './qtData';
@@ -23,6 +24,7 @@ interface QtScreenProps {
 
 /** 학생이 오늘의 말씀을 듣고 한 줄 묵상을 남기는 3분 QT 화면입니다. */
 export default function QtScreen({ onBack }: QtScreenProps) {
+  const { earn } = useArmor();
   // TTS 패키지 연결 전에도 재생 UI를 시험할 수 있는 Mock 오디오 상태입니다.
   const [isPlaying, setIsPlaying] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -73,6 +75,7 @@ export default function QtScreen({ onBack }: QtScreenProps) {
         return;
       }
       setSubmittedReflection(trimmedReflection);
+      earn(10); // 나눔을 등록하면 +10 달란트
     } catch (error) {
       console.warn('QT 나눔 등록 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');

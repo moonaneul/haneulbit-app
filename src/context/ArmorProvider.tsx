@@ -14,6 +14,8 @@ interface ArmorContextValue {
   equippedArmor: EquippedArmor;
   /** 착용 중인 갑주 중 가장 높은 티어 (아우라·레벨 표시에 씁니다) */
   topTier?: ArmorTierKey;
+  /** QT·퀴즈·감사 기록처럼 미션을 해냈을 때 달란트를 더해 줍니다. */
+  earn: (amount: number) => void;
   buy: (item: ArmorItem) => 'ok' | 'not-enough' | 'already';
   upgrade: (item: ArmorItem) => 'ok' | 'not-enough' | 'max' | 'not-owned';
   toggleEquip: (item: ArmorItem) => 'equipped' | 'unequipped';
@@ -35,6 +37,10 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
   const [talents, setTalents] = useState(initialTalents);
   const [ownedTiers, setOwnedTiers] = useState<OwnedTiers>({});
   const [equippedIds, setEquippedIds] = useState<string[]>([]);
+
+  const earn = useCallback((amount: number) => {
+    setTalents((current) => current + amount);
+  }, []);
 
   const buy = useCallback((item: ArmorItem) => {
     if (ownedTiers[item.id]) return 'already' as const;
@@ -84,8 +90,8 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
   }, [equippedArmor]);
 
   const value = useMemo<ArmorContextValue>(
-    () => ({ talents, ownedTiers, equippedIds, equippedArmor, topTier, buy, upgrade, toggleEquip }),
-    [talents, ownedTiers, equippedIds, equippedArmor, topTier, buy, upgrade, toggleEquip],
+    () => ({ talents, ownedTiers, equippedIds, equippedArmor, topTier, earn, buy, upgrade, toggleEquip }),
+    [talents, ownedTiers, equippedIds, equippedArmor, topTier, earn, buy, upgrade, toggleEquip],
   );
 
   return <ArmorContext.Provider value={value}>{children}</ArmorContext.Provider>;

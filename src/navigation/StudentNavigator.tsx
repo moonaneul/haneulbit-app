@@ -111,15 +111,15 @@ export default function StudentNavigator() {
       <Stack.Screen component={LoginRoute} name="Login" options={{ headerShown: false }} />
       {/* 홈은 하늘빛 풍경이 화면 끝까지 채워지도록 헤더를 숨깁니다. */}
       <Stack.Screen component={HomeRoute} name="Home" options={{ headerShown: false }} />
-      <Stack.Screen component={QtScreen} name="Qt" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '오늘의 3분 QT 📖' })} />
-      <Stack.Screen component={WwjdQuizScreen} name="WwjdQuiz" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: 'WWJD 퀴즈 🚦' })} />
-      <Stack.Screen component={GratitudeScreen} name="Gratitude" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '감사 보물상자 🎁' })} />
-      <Stack.Screen component={MindTalkScreen} name="MindTalk" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '하늘빛 마음 톡 💬' })} />
-      <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '달란트 상점 🛡️' })} />
-      <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '마음 게시판 🌍' })} />
-      <Stack.Screen component={NoticeCalendarScreen} name="NoticeCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '알림장 & 캘린더 📖' })} />
-      <Stack.Screen component={MonthlyCalendarScreen} name="MonthlyCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '만나 스티커 달력 🍞' })} />
-      <Stack.Screen component={ManitoScreen} name="Manito" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '비밀 마니또 🤫' })} />
+      <Stack.Screen component={QtScreen} name="Qt" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={WwjdQuizScreen} name="WwjdQuiz" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={GratitudeScreen} name="Gratitude" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={MindTalkScreen} name="MindTalk" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={ArmorShopScreen} name="ArmorShop" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={NoticeCalendarScreen} name="NoticeCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={MonthlyCalendarScreen} name="MonthlyCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={ManitoScreen} name="Manito" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
     </Stack.Navigator>
     </ArmorProvider>
   );
