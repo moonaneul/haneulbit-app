@@ -8,6 +8,7 @@ export const armorShopStyles = StyleSheet.create({
   content: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', padding: Spacing.three, gap: Spacing.three },
   profileBar: { backgroundColor: COLORS.cardBackground, borderRadius: BORDER_RADIUS.card, padding: Spacing.four, gap: Spacing.two, ...SHADOWS.soft },
   title: { color: COLORS.textPrimary, fontFamily: Fonts.display, fontSize: 24 },
+  talentRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   talentBadge: { alignSelf: 'flex-start', backgroundColor: COLORS.primarySoft, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: Spacing.three, paddingVertical: 10 },
   talentText: { color: COLORS.primary, fontFamily: Fonts.display, fontSize: 17 },
   heroCard: { alignItems: 'center', backgroundColor: COLORS.accentSoft, borderRadius: BORDER_RADIUS.card, padding: Spacing.four, gap: Spacing.two },

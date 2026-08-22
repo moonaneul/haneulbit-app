@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HaneulCharacter from '@/components/character/HaneulCharacter';
 import SkyScene from '@/components/scene/SkyScene';
+import Toast, { type ToastTone } from '@/components/ui/Toast';
 import { useArmor } from '@/context/ArmorProvider';
 
 import { ARMOR_ITEMS, ARMOR_TIERS, type ArmorItem } from './armorShopData';
 import { armorShopStyles as styles } from './armorShopStyles';
+import TalentDelta from './TalentDelta';
 
 /** 받침 유무를 확인해 아이템 이름 뒤에 자연스러운 '을/를'을 붙입니다. */
 const withObjectParticle = (name: string) => {
@@ -22,12 +24,33 @@ export default function ArmorShopScreen() {
   const { talents, ownedTiers: itemTiers, equippedIds, equippedArmor, buy, upgrade, toggleEquip } = useArmor();
   const [effectItem, setEffectItem] = useState<ArmorItem | null>(null);
   const [upgradeEffect, setUpgradeEffect] = useState<{ item: ArmorItem; tier: (typeof ARMOR_TIERS)[number] } | null>(null);
+  // Alert.alert()은 웹에서 아무것도 띄우지 않아, 안내는 화면 안 토스트로 보여 줍니다.
+  const [toast, setToast] = useState<{ message: string; tone: ToastTone } | null>(null);
+  // 방금 얼마가 빠져나갔는지 숫자로 띄워 주는 값입니다.
+  const [spent, setSpent] = useState<number | null>(null);
+
+  const hideToast = useCallback(() => setToast(null), []);
+  const clearSpent = useCallback(() => setSpent(null), []);
+
+  /** 달란트가 얼마나 모자란지 알려 주면 아이가 얼마를 더 모아야 할지 알 수 있습니다. */
+  const showNotEnough = (price: number) => {
+    setToast({
+      message: `달란트가 ${price - talents}pt 더 필요해요. QT하고 퀴즈 풀면 금방 모아요 🌸`,
+      tone: 'warn',
+    });
+  };
 
   /** 가격을 확인한 뒤 달란트를 차감하고 기본 티어로 구매 완료 상태로 바꿉니다. */
   const handlePurchase = (item: ArmorItem) => {
     try {
-      if (buy(item) === 'not-enough') {
-        Alert.alert('달란트가 조금 부족해요!', '큐티와 퀴즈로 달란트를 모아볼까요? 🌸');
+      const result = buy(item);
+      if (result === 'not-enough') {
+        showNotEnough(item.price);
+        return;
+      }
+      if (result === 'ok') {
+        setSpent(-item.price);
+        setToast({ message: `${withObjectParticle(item.name)} 샀어요! 🪙 ${item.price}pt 썼어요`, tone: 'success' });
       }
     } catch (error) {
       console.warn('전신갑주를 구매하는 중 오류가 발생했습니다.', error);
@@ -54,10 +77,13 @@ export default function ArmorShopScreen() {
         : undefined;
       const result = upgrade(item);
       if (result === 'not-enough') {
-        Alert.alert('달란트가 조금 부족해요!', '큐티와 퀴즈로 달란트를 모아볼까요? 🌸');
+        if (nextTier) showNotEnough(nextTier.upgradeCost);
         return;
       }
-      if (result === 'ok' && nextTier) setUpgradeEffect({ item, tier: nextTier });
+      if (result === 'ok' && nextTier) {
+        setSpent(-nextTier.upgradeCost);
+        setUpgradeEffect({ item, tier: nextTier });
+      }
     } catch (error) {
       console.warn('전신갑주를 강화하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -73,10 +99,14 @@ export default function ArmorShopScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          <Toast message={toast?.message ?? null} onHide={hideToast} tone={toast?.tone} />
           <View style={styles.profileBar}>
             <Text style={styles.title}>달란트 상점 &amp; 전신갑주 🛡️</Text>
-            <View style={styles.talentBadge}>
-              <Text accessibilityLiveRegion="polite" style={styles.talentText}>내 달란트: 🪙 {talents} pt</Text>
+            <View style={styles.talentRow}>
+              <View style={styles.talentBadge}>
+                <Text accessibilityLiveRegion="polite" style={styles.talentText}>내 달란트: 🪙 {talents} pt</Text>
+              </View>
+              <TalentDelta amount={spent} onDone={clearSpent} />
             </View>
           </View>
 
