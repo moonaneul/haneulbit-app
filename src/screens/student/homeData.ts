@@ -1,4 +1,3 @@
-import type { EquippedArmor } from '@/components/character/characterParts';
 import { COLORS } from '@/constants/theme';
 
 export interface StudentProfile {
@@ -7,15 +6,6 @@ export interface StudentProfile {
   talentPoints: number;
 }
 
-// 상점 구매 내역이 DB에 연결되기 전까지 홈 화면 캐릭터가 입고 있을 갑주입니다.
-export const MOCK_EQUIPPED_ARMOR: EquippedArmor = {
-  helmet: 'gold',
-  breastplate: 'gold',
-  belt: 'silver',
-  shoes: 'silver',
-  shield: 'gold',
-  sword: 'gold',
-};
 
 export interface StudentMission {
   id: 'qt' | 'wwjd' | 'gratitude' | 'talk';

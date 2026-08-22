@@ -6,6 +6,7 @@ import {
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { COLORS, Fonts, SCENE, SHADOWS } from '@/constants/theme';
+import { ArmorProvider } from '@/context/ArmorProvider';
 import LoginScreen from '@/screens/auth/LoginScreen';
 import ArmorShopScreen from '@/screens/student/ArmorShopScreen';
 import GratitudeScreen from '@/screens/student/GratitudeScreen';
@@ -96,6 +97,7 @@ function HomeHeaderButton({ goHome }: { goHome: () => void }) {
 /** 로그인부터 각 학생 미션까지 이어지는 앱의 단일 Stack 흐름입니다. */
 export default function StudentNavigator() {
   return (
+    <ArmorProvider>
     <Stack.Navigator
       initialRouteName="Login"
       screenOptions={{
@@ -119,6 +121,7 @@ export default function StudentNavigator() {
       <Stack.Screen component={MonthlyCalendarScreen} name="MonthlyCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '만나 스티커 달력 🍞' })} />
       <Stack.Screen component={ManitoScreen} name="Manito" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '비밀 마니또 🤫' })} />
     </Stack.Navigator>
+    </ArmorProvider>
   );
 }
 

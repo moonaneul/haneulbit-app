@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 import GlassCard from '@/components/ui/GlassCard';
+import { useArmor } from '@/context/ArmorProvider';
 import AvatarStage from './AvatarStage';
 import { MOCK_STUDENT, STUDENT_MISSIONS, type StudentMission } from './homeData';
 import { homeStyles as styles } from './homeStyles';
@@ -21,6 +22,8 @@ interface HomeScreenProps {
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
 export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress, onMonthlyCalendarPress, onManitoPress }: HomeScreenProps) {
+  // 달란트는 상점과 같은 값을 봐야 해서 ArmorProvider에서 가져옵니다.
+  const { talents } = useArmor();
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
@@ -92,11 +95,11 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
                 </Pressable>
                 <Pressable
                   accessibilityHint="누르면 전신갑주를 구매할 수 있는 상점으로 이동합니다"
-                  accessibilityLabel={`내 달란트 ${student.talentPoints}포인트, 달란트 상점 가기`}
+                  accessibilityLabel={`내 달란트 ${talents}포인트, 달란트 상점 가기`}
                   accessibilityRole="button"
                   onPress={handleArmorShopPress}
                   style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
-                  <Text style={styles.statText}>🪙 {student.talentPoints}pt</Text>
+                  <Text style={styles.statText}>🪙 {talents}pt</Text>
                 </Pressable>
               </View>
             </GlassCard>

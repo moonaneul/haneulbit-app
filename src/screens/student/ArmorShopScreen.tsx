@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import HaneulCharacter from '@/components/character/HaneulCharacter';
 import SkyScene from '@/components/scene/SkyScene';
+import { useArmor } from '@/context/ArmorProvider';
 
-import { ARMOR_ITEMS, ARMOR_TIERS, type ArmorItem, type ArmorTierKey } from './armorShopData';
+import { ARMOR_ITEMS, ARMOR_TIERS, type ArmorItem } from './armorShopData';
 import { armorShopStyles as styles } from './armorShopStyles';
-
-interface ArmorShopScreenProps {
-  initialTalents?: number;
-}
 
 /** 받침 유무를 확인해 아이템 이름 뒤에 자연스러운 '을/를'을 붙입니다. */
 const withObjectParticle = (name: string) => {
@@ -18,28 +16,19 @@ const withObjectParticle = (name: string) => {
   return `${name}${hasFinalConsonant ? '을' : '를'}`;
 };
 
-/** 달란트로 전신갑주를 사고 캐릭터에 착용해 보는 학생용 Mock 상점입니다. */
-export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScreenProps) {
-  // 실제 DB 연결 전에는 달란트와 구매 목록을 현재 화면에서만 관리합니다.
-  const [talents, setTalents] = useState(initialTalents);
-  // 구매한 아이템 ID를 키로, 현재 티어를 값으로 보관합니다 (구매 = 'basic' 티어 획득).
-  const [itemTiers, setItemTiers] = useState<Partial<Record<string, ArmorTierKey>>>({});
-  // 여러 갑주를 함께 착용할 수 있도록 착용 중인 아이템 ID를 배열로 보관합니다.
-  const [equippedIds, setEquippedIds] = useState<string[]>([]);
+/** 달란트로 전신갑주를 사고 캐릭터에 착용해 보는 학생용 상점입니다. */
+export default function ArmorShopScreen() {
+  // 달란트와 보유·착용 상태는 홈 화면 캐릭터와 함께 써야 해서 ArmorProvider가 들고 있습니다.
+  const { talents, ownedTiers: itemTiers, equippedIds, equippedArmor, buy, upgrade, toggleEquip } = useArmor();
   const [effectItem, setEffectItem] = useState<ArmorItem | null>(null);
   const [upgradeEffect, setUpgradeEffect] = useState<{ item: ArmorItem; tier: (typeof ARMOR_TIERS)[number] } | null>(null);
 
   /** 가격을 확인한 뒤 달란트를 차감하고 기본 티어로 구매 완료 상태로 바꿉니다. */
   const handlePurchase = (item: ArmorItem) => {
     try {
-      if (itemTiers[item.id]) return;
-      if (talents < item.price) {
+      if (buy(item) === 'not-enough') {
         Alert.alert('달란트가 조금 부족해요!', '큐티와 퀴즈로 달란트를 모아볼까요? 🌸');
-        return;
       }
-
-      setTalents((current) => current - item.price);
-      setItemTiers((current) => ({ ...current, [item.id]: 'basic' }));
     } catch (error) {
       console.warn('전신갑주를 구매하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -49,11 +38,7 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
   /** 구매한 갑주를 토글하고, 새로 착용할 때 축하 이펙트 모달을 엽니다. */
   const handleEquip = (item: ArmorItem) => {
     try {
-      const isEquipped = equippedIds.includes(item.id);
-      setEquippedIds((current) => isEquipped
-        ? current.filter((id) => id !== item.id)
-        : [...current, item.id]);
-      setEffectItem(isEquipped ? null : item);
+      setEffectItem(toggleEquip(item) === 'equipped' ? item : null);
     } catch (error) {
       console.warn('전신갑주 착용 상태를 바꾸는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -64,18 +49,15 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
   const handleUpgrade = (item: ArmorItem) => {
     try {
       const currentTier = itemTiers[item.id];
-      if (!currentTier) return;
-      const currentIndex = ARMOR_TIERS.findIndex((tier) => tier.key === currentTier);
-      const nextTier = ARMOR_TIERS[currentIndex + 1];
-      if (!nextTier) return;
-      if (talents < nextTier.upgradeCost) {
+      const nextTier = currentTier
+        ? ARMOR_TIERS[ARMOR_TIERS.findIndex((tier) => tier.key === currentTier) + 1]
+        : undefined;
+      const result = upgrade(item);
+      if (result === 'not-enough') {
         Alert.alert('달란트가 조금 부족해요!', '큐티와 퀴즈로 달란트를 모아볼까요? 🌸');
         return;
       }
-
-      setTalents((current) => current - nextTier.upgradeCost);
-      setItemTiers((current) => ({ ...current, [item.id]: nextTier.key }));
-      setUpgradeEffect({ item, tier: nextTier });
+      if (result === 'ok' && nextTier) setUpgradeEffect({ item, tier: nextTier });
     } catch (error) {
       console.warn('전신갑주를 강화하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -100,7 +82,8 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
 
           <View style={[styles.heroCard, hasAuraEquipped && styles.heroCardAura]}>
             <Text style={styles.heroLabel}>나의 믿음 용사</Text>
-            <Text accessibilityLabel="전신갑주 캐릭터" style={styles.character}>{hasAuraEquipped ? '✨🧒🏻✨' : '🧒🏻'}</Text>
+            {/* 홈 화면과 같은 캐릭터를 써서, 지금 산 갑주가 어떻게 보이는지 바로 확인할 수 있습니다. */}
+            <HaneulCharacter equipped={equippedArmor} size={150} />
             <View style={styles.equippedRow}>
               {equippedItems.length === 0
                 ? <Text style={styles.emptyText}>갑주를 착용하면 여기에 나타나요 ✨</Text>
