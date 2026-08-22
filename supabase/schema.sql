@@ -1,6 +1,7 @@
 -- 🕊️ [매일 만나 하늘빛] Supabase 데이터베이스 스키마
 --
 -- 사용법: Supabase 대시보드 → SQL Editor에 이 파일 전체를 붙여넣고 실행하세요.
+-- 여러 번 실행해도 안전합니다 (이미 있는 표는 그대로 두고 넘어갑니다).
 -- 이 파일은 지금까지 앱 화면들이 쓰던 Mock 데이터(각 화면의 xxxData.ts)를
 -- 그대로 옮겨 담을 수 있는 실제 테이블 구조입니다. 화면을 Supabase에 연결할 때
 -- 테이블 하나당 어떤 Mock 데이터 파일이 대응하는지 각 섹션 주석에 적어 두었습니다.
@@ -11,47 +12,14 @@
 --           claim_student_login() 함수로 이름+PIN을 검증해 그 학생 행에 연결합니다.
 --   - 부모님: Supabase Auth 휴대폰 번호 OTP 로그인 → 자녀 연동 코드로 parent_child_links 생성.
 
+-- Supabase에는 pgcrypto가 extensions 스키마에 이미 깔려 있습니다.
+-- 아래 함수들이 crypt()를 찾을 수 있도록 search_path에 extensions를 함께 넣어 둡니다.
 create extension if not exists pgcrypto;
 
 -- =========================================================
--- 0. 공통 헬퍼 함수 (RLS 정책에서 반복 사용)
+-- 0. 표가 없어도 만들 수 있는 공용 함수
+--    (아래 헬퍼 함수들은 참조할 표가 먼저 있어야 해서 1번 뒤로 옮겼습니다)
 -- =========================================================
-
--- 현재 로그인한 사용자가 선생님인지 확인합니다.
-create or replace function is_teacher()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (select 1 from teachers where id = auth.uid());
-$$;
-
--- 현재 로그인한 학생 계정(익명 인증 후 연결된 학생 행)의 student id를 돌려줍니다.
-create or replace function current_student_id()
-returns uuid
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select id from students where auth_user_id = auth.uid();
-$$;
-
--- 현재 로그인한 부모님 계정이 특정 학생과 연동돼 있는지 확인합니다.
-create or replace function is_linked_parent_of(target_student_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from parent_child_links
-    where parent_id = auth.uid() and student_id = target_student_id
-  );
-$$;
 
 -- updated_at 컬럼을 가진 테이블에 붙여 쓰는 공용 트리거 함수입니다.
 create or replace function set_updated_at()
@@ -69,7 +37,7 @@ $$;
 -- =========================================================
 
 -- 선생님 계정. auth.users의 id를 그대로 PK로 씁니다 (이메일/비밀번호 로그인).
-create table teachers (
+create table if not exists teachers (
   id uuid primary key references auth.users(id) on delete cascade,
   name text not null default '선생님',
   church_name text not null default '하늘빛기쁨교회',
@@ -78,7 +46,7 @@ create table teachers (
 
 -- 학생 계정. teacherHomeData.ts의 MOCK_STUDENT_STATUSES, homeData.ts의 MOCK_STUDENT에 대응합니다.
 -- auth_user_id는 처음엔 비어 있다가, claim_student_login()으로 첫 로그인할 때 채워집니다.
-create table students (
+create table if not exists students (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid unique references auth.users(id) on delete set null,
   name text not null,
@@ -91,8 +59,12 @@ create table students (
   created_at timestamptz not null default now()
 );
 
+-- 이름으로 로그인하므로 같은 이름이 두 명 있으면 누구인지 가릴 수 없습니다.
+-- 이미 만들어진 표에도 걸리도록 표 정의가 아니라 별도 인덱스로 둡니다.
+create unique index if not exists students_name_key on students (name);
+
 -- 부모님 계정. auth.users의 id를 PK로 씁니다 (휴대폰 번호 OTP 로그인).
-create table parents (
+create table if not exists parents (
   id uuid primary key references auth.users(id) on delete cascade,
   name text,
   phone_number text,
@@ -100,7 +72,7 @@ create table parents (
 );
 
 -- 부모님과 자녀를 잇는 연동 코드/관계. parentData.ts의 MOCK_LINKED_CHILD, mockParent.js에 대응합니다.
-create table parent_child_links (
+create table if not exists parent_child_links (
   id uuid primary key default gen_random_uuid(),
   parent_id uuid not null references parents(id) on delete cascade,
   student_id uuid not null references students(id) on delete cascade,
@@ -108,6 +80,48 @@ create table parent_child_links (
   linked_at timestamptz not null default now(),
   unique (parent_id, student_id)
 );
+
+-- =========================================================
+-- 1-1. 계정 표를 참조하는 헬퍼 함수 (RLS 정책에서 반복 사용)
+-- language sql 함수는 만들 때 참조하는 표가 이미 있어야 해서 여기에 둡니다.
+-- =========================================================
+
+-- 현재 로그인한 사용자가 선생님인지 확인합니다.
+create or replace function is_teacher()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select exists (select 1 from teachers where id = auth.uid());
+$$;
+
+-- 현재 로그인한 학생 계정(익명 인증 후 연결된 학생 행)의 student id를 돌려줍니다.
+create or replace function current_student_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select id from students where auth_user_id = auth.uid();
+$$;
+
+-- 현재 로그인한 부모님 계정이 특정 학생과 연동돼 있는지 확인합니다.
+create or replace function is_linked_parent_of(target_student_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select exists (
+    select 1 from parent_child_links
+    where parent_id = auth.uid() and student_id = target_student_id
+  );
+$$;
+
 
 -- =========================================================
 -- 2. 학생 계정 로그인 & 달란트 (보안이 필요한 RPC 함수)
@@ -119,7 +133,7 @@ create or replace function claim_student_login(student_name text, pin text)
 returns students
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   matched students;
@@ -141,12 +155,30 @@ begin
 end;
 $$;
 
+-- 로그인 화면에 보여 줄 아이들 목록입니다.
+-- students 표는 RLS 때문에 로그인 전에는 읽을 수 없어서, 이 함수로만 꺼내 씁니다.
+-- 이름과 이모지만 돌려주고 pin_hash·달란트 같은 값은 절대 나가지 않습니다.
+create or replace function list_student_names()
+returns table (id uuid, name text, avatar_emoji text)
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select s.id, s.name, s.avatar_emoji from students s order by s.name;
+$$;
+
+-- 익명 로그인이라도 세션이 있어야 부를 수 있게 막아 둡니다.
+-- 함수는 기본적으로 public에 실행 권한이 열려 있어서, anon만 지워서는 막히지 않습니다.
+revoke execute on function list_student_names() from public;
+grant execute on function list_student_names() to authenticated;
+
 -- 달란트는 항상 이 함수로만 더하고 빼서, talent_transactions에 사용 내역이 남도록 합니다.
 create or replace function add_talent_points(target_student_id uuid, delta int, reason text)
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
   insert into talent_transactions (student_id, amount, reason)
@@ -156,7 +188,7 @@ begin
 end;
 $$;
 
-create table talent_transactions (
+create table if not exists talent_transactions (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   amount int not null,
@@ -169,7 +201,7 @@ create table talent_transactions (
 -- teacherTemplateData.ts(MOCK_WEEKLY_TEMPLATE), qtData.ts(TODAY_QT)에 대응합니다.
 -- =========================================================
 
-create table weekly_qt_templates (
+create table if not exists weekly_qt_templates (
   id uuid primary key default gen_random_uuid(),
   week_start_date date not null,
   weekday text not null check (weekday in ('mon', 'tue', 'wed', 'thu', 'fri')),
@@ -185,6 +217,7 @@ create table weekly_qt_templates (
   unique (week_start_date, weekday)
 );
 
+drop trigger if exists weekly_qt_templates_set_updated_at on weekly_qt_templates;
 create trigger weekly_qt_templates_set_updated_at
   before update on weekly_qt_templates
   for each row execute function set_updated_at();
@@ -192,7 +225,7 @@ create trigger weekly_qt_templates_set_updated_at
 -- 학생의 QT 완료 + 한 줄 나눔. 하루(템플릿) 당 한 번만 완료할 수 있습니다.
 -- monthlyCalendarData.ts의 만나 스티커 달력은 이 테이블을 날짜별로 집계해서 그립니다
 -- (스티커 전용 테이블을 따로 두지 않고, 완료 기록 자체가 스티커입니다).
-create table qt_completions (
+create table if not exists qt_completions (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   template_id uuid not null references weekly_qt_templates(id) on delete cascade,
@@ -206,7 +239,7 @@ create table qt_completions (
 -- wwjdQuizData.ts에 대응합니다.
 -- =========================================================
 
-create table wwjd_quizzes (
+create table if not exists wwjd_quizzes (
   id uuid primary key default gen_random_uuid(),
   week_start_date date not null,
   stage1_question text not null,
@@ -219,7 +252,7 @@ create table wwjd_quizzes (
   created_at timestamptz not null default now()
 );
 
-create table wwjd_quiz_attempts (
+create table if not exists wwjd_quiz_attempts (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   quiz_id uuid not null references wwjd_quizzes(id) on delete cascade,
@@ -234,7 +267,7 @@ create table wwjd_quiz_attempts (
 -- gratitudeData.ts(MOCK_GRATITUDE_POSTS, MOCK_VIDEOS)에 대응합니다.
 -- =========================================================
 
-create table gratitude_posts (
+create table if not exists gratitude_posts (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   photo_url text,
@@ -242,7 +275,7 @@ create table gratitude_posts (
   created_at timestamptz not null default now()
 );
 
-create table gratitude_reactions (
+create table if not exists gratitude_reactions (
   id uuid primary key default gen_random_uuid(),
   post_id uuid not null references gratitude_posts(id) on delete cascade,
   reactor_student_id uuid not null references students(id) on delete cascade,
@@ -251,7 +284,7 @@ create table gratitude_reactions (
   unique (post_id, reactor_student_id, reaction_key)
 );
 
-create table recommended_videos (
+create table if not exists recommended_videos (
   id uuid primary key default gen_random_uuid(),
   category text not null check (category in ('dance', 'bible')),
   title text not null,
@@ -268,7 +301,7 @@ create table recommended_videos (
 -- 학생·부모님 화면이 같은 테이블을 함께 읽습니다.
 -- =========================================================
 
-create table notices (
+create table if not exists notices (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   content text not null,
@@ -277,7 +310,7 @@ create table notices (
   created_at timestamptz not null default now()
 );
 
-create table calendar_events (
+create table if not exists calendar_events (
   id uuid primary key default gen_random_uuid(),
   emoji text not null,
   title text not null,
@@ -292,17 +325,18 @@ create table calendar_events (
 -- StatusMessageCard.tsx, statusFeedData.ts에 대응합니다.
 -- =========================================================
 
-create table status_messages (
+create table if not exists status_messages (
   student_id uuid primary key references students(id) on delete cascade,
   message text not null,
   updated_at timestamptz not null default now()
 );
 
+drop trigger if exists status_messages_set_updated_at on status_messages;
 create trigger status_messages_set_updated_at
   before update on status_messages
   for each row execute function set_updated_at();
 
-create table status_reactions (
+create table if not exists status_reactions (
   id uuid primary key default gen_random_uuid(),
   status_student_id uuid not null references status_messages(student_id) on delete cascade,
   reactor_student_id uuid not null references students(id) on delete cascade,
@@ -318,7 +352,7 @@ create table status_reactions (
 
 -- 매주 누가 누구의 마니또인지 배정합니다. giver만 자신의 배정을 알 수 있고,
 -- receiver는 이 테이블을 직접 조회할 권한이 없습니다 (RLS에서 select 정책 자체를 주지 않음).
-create table manito_assignments (
+create table if not exists manito_assignments (
   id uuid primary key default gen_random_uuid(),
   giver_student_id uuid not null references students(id) on delete cascade,
   receiver_student_id uuid not null references students(id) on delete cascade,
@@ -331,7 +365,7 @@ create table manito_assignments (
 
 -- 받는 사람은 발신자를 알 수 없도록, 이 테이블에는 assignment_id 대신
 -- receiver_student_id만 직접 저장해 RLS가 giver 정보를 아예 노출하지 않게 합니다.
-create table manito_prayers (
+create table if not exists manito_prayers (
   id uuid primary key default gen_random_uuid(),
   assignment_id uuid not null references manito_assignments(id) on delete cascade,
   receiver_student_id uuid not null references students(id) on delete cascade,
@@ -344,7 +378,7 @@ create table manito_prayers (
 -- mindTalkData.ts, teacherMindTalkData.ts에 대응합니다.
 -- =========================================================
 
-create table mind_talk_messages (
+create table if not exists mind_talk_messages (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   sender text not null check (sender in ('teacher', 'student')),
@@ -357,7 +391,7 @@ create table mind_talk_messages (
 -- teacherSafetyData.ts에 대응합니다.
 -- =========================================================
 
-create table flagged_posts (
+create table if not exists flagged_posts (
   id uuid primary key default gen_random_uuid(),
   source text not null check (source in ('qt', 'gratitude', 'status', 'manito', 'mind_talk')),
   source_id uuid,
@@ -375,7 +409,7 @@ create table flagged_posts (
 -- armorShopData.ts(ARMOR_ITEMS, ARMOR_TIERS)에 대응합니다.
 -- =========================================================
 
-create table armor_catalog (
+create table if not exists armor_catalog (
   id text primary key, -- 'helmet', 'shield' 등 armorShopData.ts와 동일한 문자열 id
   emoji text not null,
   name text not null,
@@ -386,7 +420,7 @@ create table armor_catalog (
   tag text check (tag in ('bonus', 'seasonal'))
 );
 
-create table student_armor (
+create table if not exists student_armor (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   armor_id text not null references armor_catalog(id),
@@ -401,7 +435,7 @@ create table student_armor (
 -- parentData.ts(MOCK_HOME_MISSIONS)에 대응합니다.
 -- =========================================================
 
-create table home_mission_submissions (
+create table if not exists home_mission_submissions (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references students(id) on delete cascade,
   emoji text not null,
@@ -442,85 +476,123 @@ alter table student_armor enable row level security;
 alter table home_mission_submissions enable row level security;
 
 -- 계정
+drop policy if exists "teachers_self_select" on teachers;
 create policy "teachers_self_select" on teachers for select using (id = auth.uid());
+drop policy if exists "teachers_self_update" on teachers;
 create policy "teachers_self_update" on teachers for update using (id = auth.uid());
 
+drop policy if exists "students_readable_by_owner_teacher_linked_parent" on students;
 create policy "students_readable_by_owner_teacher_linked_parent" on students for select
   using (auth_user_id = auth.uid() or is_teacher() or is_linked_parent_of(id));
+drop policy if exists "students_insert_by_teacher" on students;
 create policy "students_insert_by_teacher" on students for insert with check (is_teacher());
+drop policy if exists "students_update_by_owner_or_teacher" on students;
 create policy "students_update_by_owner_or_teacher" on students for update
   using (auth_user_id = auth.uid() or is_teacher());
 
+drop policy if exists "parents_self_select" on parents;
 create policy "parents_self_select" on parents for select using (id = auth.uid());
+drop policy if exists "parents_self_upsert" on parents;
 create policy "parents_self_upsert" on parents for insert with check (id = auth.uid());
+drop policy if exists "parents_self_update" on parents;
 create policy "parents_self_update" on parents for update using (id = auth.uid());
 
+drop policy if exists "parent_child_links_visible_to_parties" on parent_child_links;
 create policy "parent_child_links_visible_to_parties" on parent_child_links for select
   using (parent_id = auth.uid() or is_teacher());
+drop policy if exists "parent_child_links_insert_by_parent" on parent_child_links;
 create policy "parent_child_links_insert_by_parent" on parent_child_links for insert
   with check (parent_id = auth.uid());
 
+drop policy if exists "talent_transactions_visible_to_owner_teacher_parent" on talent_transactions;
 create policy "talent_transactions_visible_to_owner_teacher_parent" on talent_transactions for select
   using (student_id = current_student_id() or is_teacher() or is_linked_parent_of(student_id));
 
 -- QT 템플릿: 전체 학생·부모는 게시된 것만, 선생님은 전체(초안 포함)
+drop policy if exists "weekly_qt_templates_read_published" on weekly_qt_templates;
 create policy "weekly_qt_templates_read_published" on weekly_qt_templates for select
   using (is_published or is_teacher());
+drop policy if exists "weekly_qt_templates_write_by_teacher" on weekly_qt_templates;
 create policy "weekly_qt_templates_write_by_teacher" on weekly_qt_templates for all
   using (is_teacher()) with check (is_teacher());
 
+drop policy if exists "qt_completions_own_or_teacher_or_parent" on qt_completions;
 create policy "qt_completions_own_or_teacher_or_parent" on qt_completions for select
   using (student_id = current_student_id() or is_teacher() or is_linked_parent_of(student_id));
+drop policy if exists "qt_completions_insert_own" on qt_completions;
 create policy "qt_completions_insert_own" on qt_completions for insert
   with check (student_id = current_student_id());
 
 -- WWJD 퀴즈
+drop policy if exists "wwjd_quizzes_read_all" on wwjd_quizzes;
 create policy "wwjd_quizzes_read_all" on wwjd_quizzes for select using (true);
+drop policy if exists "wwjd_quizzes_write_by_teacher" on wwjd_quizzes;
 create policy "wwjd_quizzes_write_by_teacher" on wwjd_quizzes for all
   using (is_teacher()) with check (is_teacher());
+drop policy if exists "wwjd_quiz_attempts_own_or_teacher" on wwjd_quiz_attempts;
 create policy "wwjd_quiz_attempts_own_or_teacher" on wwjd_quiz_attempts for select
   using (student_id = current_student_id() or is_teacher());
+drop policy if exists "wwjd_quiz_attempts_insert_own" on wwjd_quiz_attempts;
 create policy "wwjd_quiz_attempts_insert_own" on wwjd_quiz_attempts for insert
   with check (student_id = current_student_id());
 
 -- 감사 보물상자: 12명 전체 공동체 공개이므로 로그인한 학생/선생님이면 모두 열람 가능
+drop policy if exists "gratitude_posts_read_all_authenticated" on gratitude_posts;
 create policy "gratitude_posts_read_all_authenticated" on gratitude_posts for select using (true);
+drop policy if exists "gratitude_posts_insert_own" on gratitude_posts;
 create policy "gratitude_posts_insert_own" on gratitude_posts for insert
   with check (student_id = current_student_id());
+drop policy if exists "gratitude_reactions_read_all" on gratitude_reactions;
 create policy "gratitude_reactions_read_all" on gratitude_reactions for select using (true);
+drop policy if exists "gratitude_reactions_insert_own" on gratitude_reactions;
 create policy "gratitude_reactions_insert_own" on gratitude_reactions for insert
   with check (reactor_student_id = current_student_id());
 
+drop policy if exists "recommended_videos_read_all" on recommended_videos;
 create policy "recommended_videos_read_all" on recommended_videos for select using (true);
+drop policy if exists "recommended_videos_write_by_teacher" on recommended_videos;
 create policy "recommended_videos_write_by_teacher" on recommended_videos for all
   using (is_teacher()) with check (is_teacher());
 
 -- 알림장 & 캘린더: 전체 공개 읽기, 작성은 선생님만
+drop policy if exists "notices_read_all" on notices;
 create policy "notices_read_all" on notices for select using (true);
+drop policy if exists "notices_write_by_teacher" on notices;
 create policy "notices_write_by_teacher" on notices for all
   using (is_teacher()) with check (is_teacher());
+drop policy if exists "calendar_events_read_all" on calendar_events;
 create policy "calendar_events_read_all" on calendar_events for select using (true);
+drop policy if exists "calendar_events_write_by_teacher" on calendar_events;
 create policy "calendar_events_write_by_teacher" on calendar_events for all
   using (is_teacher()) with check (is_teacher());
 
 -- 상태메시지: 12명 전체 공개, 본인만 수정
+drop policy if exists "status_messages_read_all" on status_messages;
 create policy "status_messages_read_all" on status_messages for select using (true);
+drop policy if exists "status_messages_upsert_own" on status_messages;
 create policy "status_messages_upsert_own" on status_messages for insert
   with check (student_id = current_student_id());
+drop policy if exists "status_messages_update_own" on status_messages;
 create policy "status_messages_update_own" on status_messages for update
   using (student_id = current_student_id());
+drop policy if exists "status_reactions_read_all" on status_reactions;
 create policy "status_reactions_read_all" on status_reactions for select using (true);
+drop policy if exists "status_reactions_insert_own" on status_reactions;
 create policy "status_reactions_insert_own" on status_reactions for insert
   with check (reactor_student_id = current_student_id());
 
 -- 마니또: giver는 자신이 보낸 배정만, receiver는 배정 테이블에 접근 불가(발신자 비밀 보장)
+drop policy if exists "manito_assignments_visible_to_giver_or_teacher" on manito_assignments;
 create policy "manito_assignments_visible_to_giver_or_teacher" on manito_assignments for select
   using (giver_student_id = current_student_id() or is_teacher());
+drop policy if exists "manito_assignments_write_by_teacher" on manito_assignments;
 create policy "manito_assignments_write_by_teacher" on manito_assignments for all
   using (is_teacher()) with check (is_teacher());
 -- 받은 편지함은 receiver_student_id로만 걸러 보이므로 누가 보냈는지는 절대 알 수 없습니다.
+drop policy if exists "manito_prayers_visible_to_receiver_or_teacher" on manito_prayers;
 create policy "manito_prayers_visible_to_receiver_or_teacher" on manito_prayers for select
   using (receiver_student_id = current_student_id() or is_teacher());
+drop policy if exists "manito_prayers_insert_by_assigned_giver" on manito_prayers;
 create policy "manito_prayers_insert_by_assigned_giver" on manito_prayers for insert
   with check (
     exists (
@@ -530,8 +602,10 @@ create policy "manito_prayers_insert_by_assigned_giver" on manito_prayers for in
   );
 
 -- 마음 톡: 본인과 선생님만
+drop policy if exists "mind_talk_messages_own_or_teacher" on mind_talk_messages;
 create policy "mind_talk_messages_own_or_teacher" on mind_talk_messages for select
   using (student_id = current_student_id() or is_teacher());
+drop policy if exists "mind_talk_messages_insert_own_or_teacher" on mind_talk_messages;
 create policy "mind_talk_messages_insert_own_or_teacher" on mind_talk_messages for insert
   with check (
     (sender = 'student' and student_id = current_student_id())
@@ -539,22 +613,30 @@ create policy "mind_talk_messages_insert_own_or_teacher" on mind_talk_messages f
   );
 
 -- 안전 모니터링: 선생님 전용
+drop policy if exists "flagged_posts_teacher_only" on flagged_posts;
 create policy "flagged_posts_teacher_only" on flagged_posts for all
   using (is_teacher()) with check (is_teacher());
 
 -- 전신갑주
+drop policy if exists "armor_catalog_read_all" on armor_catalog;
 create policy "armor_catalog_read_all" on armor_catalog for select using (true);
+drop policy if exists "armor_catalog_write_by_teacher" on armor_catalog;
 create policy "armor_catalog_write_by_teacher" on armor_catalog for all
   using (is_teacher()) with check (is_teacher());
+drop policy if exists "student_armor_own_or_teacher_or_parent" on student_armor;
 create policy "student_armor_own_or_teacher_or_parent" on student_armor for select
   using (student_id = current_student_id() or is_teacher() or is_linked_parent_of(student_id));
+drop policy if exists "student_armor_write_own" on student_armor;
 create policy "student_armor_write_own" on student_armor for all
   using (student_id = current_student_id()) with check (student_id = current_student_id());
 
 -- 가정 실천 미션: 본인 학생, 담당 선생님, 연동된 부모님만
+drop policy if exists "home_mission_submissions_visible" on home_mission_submissions;
 create policy "home_mission_submissions_visible" on home_mission_submissions for select
   using (student_id = current_student_id() or is_teacher() or is_linked_parent_of(student_id));
+drop policy if exists "home_mission_submissions_insert_own" on home_mission_submissions;
 create policy "home_mission_submissions_insert_own" on home_mission_submissions for insert
   with check (student_id = current_student_id());
+drop policy if exists "home_mission_submissions_approve_by_parent" on home_mission_submissions;
 create policy "home_mission_submissions_approve_by_parent" on home_mission_submissions for update
   using (is_linked_parent_of(student_id));
