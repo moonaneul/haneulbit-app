@@ -129,7 +129,7 @@ export default function ArmorShopScreen() {
                       accessibilityRole="button"
                       onPress={() => isPurchased ? handleEquip(item) : handlePurchase(item)}
                       style={({ pressed }) => [styles.actionButton, isPurchased && styles.equipButton, isEquipped && styles.equippedButton, pressed && styles.pressed]}>
-                      <Text style={[styles.buttonText, isPurchased && styles.buttonTextSmall]}>
+                      <Text style={[styles.buttonText, isPurchased && styles.equipText, isEquipped && styles.equippedButtonText, isPurchased && styles.buttonTextSmall]}>
                         {isPurchased ? (isEquipped ? '착용 중 🟢' : '착용하기') : `구매 (🪙 ${item.price}pt)`}
                       </Text>
                     </Pressable>
@@ -139,7 +139,7 @@ export default function ArmorShopScreen() {
                         accessibilityRole="button"
                         onPress={() => handleUpgrade(item)}
                         style={({ pressed }) => [styles.actionButton, styles.upgradeButton, pressed && styles.pressed]}>
-                        <Text style={[styles.buttonText, styles.buttonTextSmall]}>강화 (🪙 {nextTier.upgradeCost}pt)</Text>
+                        <Text style={[styles.buttonText, styles.upgradeText, styles.buttonTextSmall]}>강화 (🪙 {nextTier.upgradeCost}pt)</Text>
                       </Pressable>
                     )}
                   </View>

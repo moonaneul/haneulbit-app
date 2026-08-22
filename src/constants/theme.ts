@@ -32,6 +32,16 @@ export const COLORS = {
   warning: "#FFA726",
 };
 
+// 목록 안에서 여러 번 반복되는 버튼용 색 조합입니다.
+// 진한 단색을 아홉 번 쌓으면 화면이 시끄러워지고, 흰 글자는 대비가 낮아 잘 안 보입니다.
+// 연한 배경 + 진한 같은 계열 글자로 두면 조용하면서 글자도 또렷합니다.
+export const SOFT_BUTTON = {
+  buy: { bg: "#FBD5CB", ink: "#A03C25" },
+  equip: { bg: "#DCEBE8", ink: "#2E6660" },
+  equipped: { bg: "#D9EBD3", ink: "#2F6B36" },
+  upgrade: { bg: "#FFE7B8", ink: "#8A5A05" },
+};
+
 // 🌤️ 화면 전체를 채우는 '하늘빛 풍경' 색상
 // 카드를 흰 배경에 나열하는 대신, 앱 전체가 하나의 하늘 풍경 위에 놓이도록 합니다.
 export const SCENE = {

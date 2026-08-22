@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { BORDER_RADIUS, COLORS, Fonts, MaxContentWidth, SHADOWS, Spacing } from '@/constants/theme';
+import { BORDER_RADIUS, COLORS, Fonts, MaxContentWidth, SHADOWS, Spacing, SOFT_BUTTON } from '@/constants/theme';
 
 export const armorShopStyles = StyleSheet.create({
   safeArea: { flex: 1 },
@@ -31,11 +31,14 @@ export const armorShopStyles = StyleSheet.create({
   tierBadge: { alignSelf: 'flex-start', backgroundColor: COLORS.cardBackground, borderRadius: BORDER_RADIUS.badge, paddingHorizontal: 10, paddingVertical: 4 },
   tierBadgeText: { fontFamily: Fonts.sans, color: COLORS.textPrimary, fontSize: 12, fontWeight: '800' },
   actionRow: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: BORDER_RADIUS.button, paddingHorizontal: Spacing.two },
-  equipButton: { backgroundColor: COLORS.accent },
-  equippedButton: { backgroundColor: COLORS.success },
-  upgradeButton: { backgroundColor: COLORS.secondary },
-  buttonText: { fontFamily: Fonts.sans, color: COLORS.textOnPrimary, fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  actionButton: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: SOFT_BUTTON.buy.bg, borderRadius: BORDER_RADIUS.button, paddingHorizontal: Spacing.two },
+  equipButton: { backgroundColor: SOFT_BUTTON.equip.bg },
+  equippedButton: { backgroundColor: SOFT_BUTTON.equipped.bg },
+  upgradeButton: { backgroundColor: SOFT_BUTTON.upgrade.bg },
+  buttonText: { fontFamily: Fonts.sans, color: SOFT_BUTTON.buy.ink, fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  equipText: { color: SOFT_BUTTON.equip.ink },
+  equippedButtonText: { color: SOFT_BUTTON.equipped.ink },
+  upgradeText: { color: SOFT_BUTTON.upgrade.ink },
   buttonTextSmall: { fontFamily: Fonts.sans, fontSize: 13 },
   pressed: { opacity: 0.78, transform: [{ scale: 0.98 }] },
   modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(41, 42, 45, 0.38)', padding: Spacing.four },

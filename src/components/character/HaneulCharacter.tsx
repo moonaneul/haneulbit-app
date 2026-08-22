@@ -106,17 +106,17 @@ export default function HaneulCharacter({ equipped = {}, size = 200 }: HaneulCha
         fill={P.hair}
       />
 
-      {/* 얼굴 */}
-      <Ellipse cx={ANCHORS.head.x - 14} cy={ANCHORS.head.y + 4} rx={4.4} ry={5.6} fill={P.outline} />
-      <Ellipse cx={ANCHORS.head.x + 14} cy={ANCHORS.head.y + 4} rx={4.4} ry={5.6} fill={P.outline} />
-      <Ellipse cx={ANCHORS.head.x - 12.6} cy={ANCHORS.head.y + 1.6} rx={1.5} ry={1.8} fill="#FFFFFF" />
-      <Ellipse cx={ANCHORS.head.x + 15.4} cy={ANCHORS.head.y + 1.6} rx={1.5} ry={1.8} fill="#FFFFFF" />
-      <Ellipse cx={ANCHORS.head.x - 26} cy={ANCHORS.head.y + 13} rx={6} ry={3.6} fill="#F7B9A6" opacity={0.55} />
-      <Ellipse cx={ANCHORS.head.x + 26} cy={ANCHORS.head.y + 13} rx={6} ry={3.6} fill="#F7B9A6" opacity={0.55} />
+      {/* 얼굴 — 비율은 그대로 두고 눈·웃음·볼만 키워 인상을 밝게 잡았습니다. */}
+      <Ellipse cx={ANCHORS.head.x - 14} cy={ANCHORS.head.y + 3} rx={5.3} ry={6.7} fill={P.outline} />
+      <Ellipse cx={ANCHORS.head.x + 14} cy={ANCHORS.head.y + 3} rx={5.3} ry={6.7} fill={P.outline} />
+      <Ellipse cx={ANCHORS.head.x - 12.2} cy={ANCHORS.head.y + 0.6} rx={1.8} ry={2.1} fill="#FFFFFF" />
+      <Ellipse cx={ANCHORS.head.x + 15.8} cy={ANCHORS.head.y + 0.6} rx={1.8} ry={2.1} fill="#FFFFFF" />
+      <Ellipse cx={ANCHORS.head.x - 26} cy={ANCHORS.head.y + 15} rx={7.5} ry={4.5} fill="#F7B9A6" opacity={0.8} />
+      <Ellipse cx={ANCHORS.head.x + 26} cy={ANCHORS.head.y + 15} rx={7.5} ry={4.5} fill="#F7B9A6" opacity={0.8} />
       <Path
-        d={`M${ANCHORS.head.x - 8} ${ANCHORS.head.y + 17} Q ${ANCHORS.head.x} ${ANCHORS.head.y + 24} ${ANCHORS.head.x + 8} ${ANCHORS.head.y + 17}`}
+        d={`M${ANCHORS.head.x - 11} ${ANCHORS.head.y + 17} Q ${ANCHORS.head.x} ${ANCHORS.head.y + 28} ${ANCHORS.head.x + 11} ${ANCHORS.head.y + 17}`}
         stroke={P.outline}
-        strokeWidth={2.6}
+        strokeWidth={2.8}
         strokeLinecap="round"
         fill="none"
       />
