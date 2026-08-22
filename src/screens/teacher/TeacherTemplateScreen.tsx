@@ -84,7 +84,6 @@ export default function TeacherTemplateScreen() {
 
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>말씀 내용</Text>
-              <Text style={styles.sectionGuide}>아이들이 오늘 읽을 말씀을 적어 주세요.</Text>
 
               <Text style={styles.label}>성경 구절</Text>
               <TextInput

@@ -15,7 +15,6 @@ export const manitoStyles = StyleSheet.create({
   buddyAvatarCircle: { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.cardBackground, marginTop: 12 },
   buddyAvatar: { fontFamily: Fonts.sans, fontSize: 36 },
   buddyName: { fontFamily: Fonts.sans, marginTop: 10, color: COLORS.textPrimary, fontSize: 20, fontWeight: '900' },
-  secretNote: { fontFamily: Fonts.sans, marginTop: 8, color: COLORS.textSecondary, fontSize: 12, lineHeight: 18, fontWeight: '600', textAlign: 'center' },
   card: { ...SHADOWS.soft, marginBottom: 18, padding: 20, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.cardBackground },
   sectionTitle: { fontFamily: Fonts.display, color: COLORS.textPrimary, fontSize: 17 },
   sectionGuide: { fontFamily: Fonts.sans, marginTop: 6, color: COLORS.textSecondary, fontSize: 13, lineHeight: 20, fontWeight: '600' },

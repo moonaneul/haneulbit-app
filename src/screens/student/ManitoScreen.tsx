@@ -50,9 +50,6 @@ export default function ManitoScreen() {
               <Text style={styles.buddyLabel}>이번 주 나의 마니또</Text>
               <View style={styles.buddyAvatarCircle}><Text style={styles.buddyAvatar}>{MY_MANITO_BUDDY.avatar}</Text></View>
               <Text style={styles.buddyName}>{MY_MANITO_BUDDY.name}</Text>
-              <Text style={styles.secretNote}>
-                🤫 아무에게도 말하지 말고, {MY_MANITO_BUDDY.name} 친구를 위해 몰래 기도해 주세요!
-              </Text>
             </View>
 
             <View style={styles.card}>
@@ -69,7 +66,7 @@ export default function ManitoScreen() {
                 value={draft}
               />
               <View style={styles.inputFooter}>
-                <Text style={styles.safeHint}>{guide || '🌸 친구의 마음이 따뜻해지는 말로 적어 보아요.'}</Text>
+                <Text style={styles.safeHint}>{guide || '🌸 친구 마음이 따뜻해지는 말로 적어 줘.'}</Text>
                 <Text style={styles.counter}>{draft.length}/{MAX_PRAYER_LENGTH}</Text>
               </View>
               <Pressable

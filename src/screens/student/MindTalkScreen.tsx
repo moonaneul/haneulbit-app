@@ -67,7 +67,7 @@ export default function MindTalkScreen({ onBack }: MindTalkScreenProps) {
           <FlatList ref={listRef} contentContainerStyle={styles.listContent} data={messages} keyExtractor={(item) => item.id} keyboardShouldPersistTaps="handled" renderItem={renderMessage} showsVerticalScrollIndicator={false} />
 
           <View style={styles.composer}>
-            <TextInput accessibilityLabel="선생님께 보낼 마음 톡" maxLength={300} multiline onChangeText={setDraft} placeholder="선생님께 마음이나 기도제목을 나눠요..." placeholderTextColor="#96918A" style={styles.input} value={draft} />
+            <TextInput accessibilityLabel="선생님께 보낼 마음 톡" maxLength={300} multiline onChangeText={setDraft} placeholder="선생님께 하고 싶은 말..." placeholderTextColor="#96918A" style={styles.input} value={draft} />
             <Pressable accessibilityRole="button" accessibilityState={{ disabled: !canSend }} disabled={!canSend} onPress={handleSend} style={({ pressed }) => [styles.sendButton, !canSend && styles.sendDisabled, pressed && styles.pressed]}><Text style={styles.sendText}>전송 🕊️</Text></Pressable>
           </View>
         </View>
