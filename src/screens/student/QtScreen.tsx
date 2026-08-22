@@ -75,7 +75,7 @@ export default function QtScreen({ onBack }: QtScreenProps) {
         return;
       }
       setSubmittedReflection(trimmedReflection);
-      earn(10); // 나눔을 등록하면 +10 달란트
+      earn(10, '3분 QT 나눔'); // 나눔을 등록하면 +10 달란트
     } catch (error) {
       console.warn('QT 나눔 등록 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');

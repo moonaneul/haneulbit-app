@@ -173,18 +173,33 @@ $$;
 revoke execute on function list_student_names() from public;
 grant execute on function list_student_names() to authenticated;
 
+-- 예전 버전은 void를 돌려줬습니다. create or replace로는 반환 타입을 바꿀 수 없어서 먼저 지웁니다.
+drop function if exists add_talent_points(uuid, int, text);
+
 -- 달란트는 항상 이 함수로만 더하고 빼서, talent_transactions에 사용 내역이 남도록 합니다.
+-- security definer라 RLS를 지나치므로, 누가 부를 수 있는지 함수 안에서 직접 확인합니다.
 create or replace function add_talent_points(target_student_id uuid, delta int, reason text)
-returns void
+returns int
 language plpgsql
 security definer
 set search_path = public, extensions
 as $$
+declare
+  new_total int;
 begin
+  -- 아이가 남의 달란트를 건드리거나 마음대로 올리지 못하도록 선생님만 쓸 수 있습니다.
+  if not is_teacher() then
+    raise exception '선생님만 달란트를 직접 조정할 수 있어요';
+  end if;
+
   insert into talent_transactions (student_id, amount, reason)
   values (target_student_id, delta, reason);
 
-  update students set talent_points = talent_points + delta where id = target_student_id;
+  update students set talent_points = talent_points + delta
+  where id = target_student_id
+  returning talent_points into new_total;
+
+  return new_total;
 end;
 $$;
 
@@ -429,6 +444,150 @@ create table if not exists student_armor (
   purchased_at timestamptz not null default now(),
   unique (student_id, armor_id)
 );
+
+-- 티어별 강화 비용. armorShopData.ts의 ARMOR_TIERS와 같은 값입니다.
+-- 가격을 서버가 들고 있어야 앱을 고쳐도 공짜로 강화할 수 없습니다.
+create table if not exists armor_tier_costs (
+  tier text primary key check (tier in ('basic', 'silver', 'gold', 'light')),
+  order_index int not null unique,
+  upgrade_cost int not null
+);
+alter table armor_tier_costs enable row level security;
+drop policy if exists "armor_tier_costs_read_all" on armor_tier_costs;
+create policy "armor_tier_costs_read_all" on armor_tier_costs for select using (true);
+
+-- 지금 로그인한 아이의 달란트와 갑주 상태를 한 번에 돌려줍니다.
+-- 화면이 이 한 덩어리만 받아 쓰면 되므로 요청이 여러 번 오가지 않습니다.
+create or replace function get_my_armor_state()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select jsonb_build_object(
+    'talents', coalesce((select talent_points from students where id = current_student_id()), 0),
+    'armor', coalesce((
+      select jsonb_agg(jsonb_build_object('armorId', armor_id, 'tier', tier, 'isEquipped', is_equipped))
+      from student_armor where student_id = current_student_id()
+    ), '[]'::jsonb)
+  );
+$$;
+
+-- 갑주 구매. 가격 확인과 달란트 차감을 서버가 한 번에 처리해,
+-- 앱을 고쳐도 돈을 안 내고 살 수 없게 합니다.
+create or replace function buy_armor(p_armor_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  item_price int;
+  my_talents int;
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+
+  select price into item_price from armor_catalog where id = p_armor_id;
+  if item_price is null then raise exception '없는 갑주예요'; end if;
+
+  if exists (select 1 from student_armor where student_id = me and armor_id = p_armor_id) then
+    raise exception 'ALREADY_OWNED';
+  end if;
+
+  select talent_points into my_talents from students where id = me;
+  if my_talents < item_price then raise exception 'NOT_ENOUGH'; end if;
+
+  insert into talent_transactions (student_id, amount, reason)
+  values (me, -item_price, '갑주 구매: ' || p_armor_id);
+  update students set talent_points = talent_points - item_price where id = me;
+  insert into student_armor (student_id, armor_id) values (me, p_armor_id);
+
+  return get_my_armor_state();
+end;
+$$;
+
+-- 다음 티어로 강화. 비용도 서버가 armor_tier_costs에서 읽습니다.
+create or replace function upgrade_armor(p_armor_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  current_tier text;
+  next_tier text;
+  cost int;
+  my_talents int;
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+
+  select tier into current_tier from student_armor where student_id = me and armor_id = p_armor_id;
+  if current_tier is null then raise exception 'NOT_OWNED'; end if;
+
+  select t.tier, t.upgrade_cost into next_tier, cost
+  from armor_tier_costs t
+  where t.order_index = (select order_index + 1 from armor_tier_costs where tier = current_tier);
+  if next_tier is null then raise exception 'MAX_TIER'; end if;
+
+  select talent_points into my_talents from students where id = me;
+  if my_talents < cost then raise exception 'NOT_ENOUGH'; end if;
+
+  insert into talent_transactions (student_id, amount, reason)
+  values (me, -cost, '갑주 강화: ' || p_armor_id || ' -> ' || next_tier);
+  update students set talent_points = talent_points - cost where id = me;
+  update student_armor set tier = next_tier where student_id = me and armor_id = p_armor_id;
+
+  return get_my_armor_state();
+end;
+$$;
+
+-- QT·퀴즈·감사 기록을 마쳤을 때 아이 스스로 받는 달란트입니다.
+-- 지금은 앱이 "다 했다"고 알려 주는 구조라, 한 번에 받을 수 있는 양을 서버가 제한합니다.
+-- QT 완료 기록 자체가 서버로 옮겨지면 그때 완료 여부까지 서버가 확인하게 바꿔야 합니다.
+create or replace function earn_talents(p_amount int, p_reason text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+  if p_amount is null or p_amount < 1 or p_amount > 50 then
+    raise exception 'INVALID_AMOUNT';
+  end if;
+
+  insert into talent_transactions (student_id, amount, reason)
+  values (me, p_amount, p_reason);
+  update students set talent_points = talent_points + p_amount where id = me;
+
+  return get_my_armor_state();
+end;
+$$;
+
+-- 착용/해제는 달란트가 오가지 않으므로 상태만 뒤집습니다.
+create or replace function toggle_equip_armor(p_armor_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+
+  update student_armor set is_equipped = not is_equipped
+  where student_id = me and armor_id = p_armor_id;
+  if not found then raise exception 'NOT_OWNED'; end if;
+
+  return get_my_armor_state();
+end;
+$$;
 
 -- =========================================================
 -- 12. 가정 실천 미션 도장 (부모님 승인)

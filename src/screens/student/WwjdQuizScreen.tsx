@@ -51,7 +51,7 @@ export default function WwjdQuizScreen({ onBack }: WwjdQuizScreenProps) {
         return;
       }
 
-      earn(20); // 1·2단계 각 10달란트
+      earn(20, 'WWJD 퀴즈 완료'); // 1·2단계 각 10달란트
       setIsRewardVisible(true);
       Animated.spring(rewardScale, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start();
     } catch (error) {

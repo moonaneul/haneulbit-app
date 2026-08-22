@@ -41,11 +41,15 @@ export default function ArmorShopScreen() {
   };
 
   /** 가격을 확인한 뒤 달란트를 차감하고 기본 티어로 구매 완료 상태로 바꿉니다. */
-  const handlePurchase = (item: ArmorItem) => {
+  const handlePurchase = async (item: ArmorItem) => {
     try {
-      const result = buy(item);
+      const result = await buy(item);
       if (result === 'not-enough') {
         showNotEnough(item.price);
+        return;
+      }
+      if (result === 'error') {
+        setToast({ message: '잠깐 연결이 안 됐어요. 다시 눌러 볼까요? 🌸', tone: 'warn' });
         return;
       }
       if (result === 'ok') {
@@ -59,9 +63,9 @@ export default function ArmorShopScreen() {
   };
 
   /** 구매한 갑주를 토글하고, 새로 착용할 때 축하 이펙트 모달을 엽니다. */
-  const handleEquip = (item: ArmorItem) => {
+  const handleEquip = async (item: ArmorItem) => {
     try {
-      setEffectItem(toggleEquip(item) === 'equipped' ? item : null);
+      setEffectItem((await toggleEquip(item)) === 'equipped' ? item : null);
     } catch (error) {
       console.warn('전신갑주 착용 상태를 바꾸는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -69,15 +73,19 @@ export default function ArmorShopScreen() {
   };
 
   /** 다음 티어의 강화 비용을 차감하고, 기본 -> 실버 -> 골드 -> 빛의 용사 순으로 올려줍니다. */
-  const handleUpgrade = (item: ArmorItem) => {
+  const handleUpgrade = async (item: ArmorItem) => {
     try {
       const currentTier = itemTiers[item.id];
       const nextTier = currentTier
         ? ARMOR_TIERS[ARMOR_TIERS.findIndex((tier) => tier.key === currentTier) + 1]
         : undefined;
-      const result = upgrade(item);
+      const result = await upgrade(item);
       if (result === 'not-enough') {
         if (nextTier) showNotEnough(nextTier.upgradeCost);
+        return;
+      }
+      if (result === 'error') {
+        setToast({ message: '잠깐 연결이 안 됐어요. 다시 눌러 볼까요? 🌸', tone: 'warn' });
         return;
       }
       if (result === 'ok' && nextTier) {

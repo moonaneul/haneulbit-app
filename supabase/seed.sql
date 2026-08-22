@@ -13,3 +13,11 @@ insert into armor_catalog (id, emoji, name, price, description, color_hex, tag) 
   ('staff', '🦯', '모세의 지팡이', 90, '홍해를 가르듯, 어떤 어려움도 하나님과 함께 헤쳐 나가요.', '#EAF0F6', 'bonus'),
   ('christmas-costume', '🎄', '성탄절 한정판 코스튬', 100, '아기 예수님의 탄생을 기억하며 온 마을에 기쁜 소식을 전해요.', '#E9F5EC', 'seasonal')
 on conflict (id) do nothing;
+
+-- 티어별 강화 비용 (armorShopData.ts의 ARMOR_TIERS와 같은 값)
+insert into armor_tier_costs (tier, order_index, upgrade_cost) values
+  ('basic', 0, 0),
+  ('silver', 1, 30),
+  ('gold', 2, 60),
+  ('light', 3, 100)
+on conflict (tier) do update set order_index = excluded.order_index, upgrade_cost = excluded.upgrade_cost;

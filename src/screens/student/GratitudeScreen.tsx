@@ -66,7 +66,7 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
         setIsSafetyModalVisible(true);
         return;
       }
-      earn(10);
+      earn(10, '감사 보물상자 기록');
       Alert.alert('보물상자에 쏙! 🎁', '감사 기록을 저장하고 +10 달란트를 받았어요 🪙');
       setTitle('');
     } catch (error) {
