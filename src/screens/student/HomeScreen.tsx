@@ -5,6 +5,7 @@ import SkyScene from '@/components/scene/SkyScene';
 import GlassCard from '@/components/ui/GlassCard';
 import { useArmor } from '@/context/ArmorProvider';
 import { STORE_KEYS, loadJson, saveJson } from '@/lib/localStore';
+import { fetchQtSummary, isQtApiReady } from '@/lib/qtApi';
 import AvatarStage from './AvatarStage';
 import { MOCK_STUDENT, STUDENT_MISSIONS, type StudentMission } from './homeData';
 import { homeStyles as styles } from './homeStyles';
@@ -33,6 +34,15 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
   const [isAvatarTalking, setIsAvatarTalking] = useState(true);
   const [statusMessage, setStatusMessage] = useState(DEFAULT_STATUS_MESSAGE);
+  // 연속 출석은 QT 완료 기록에서 계산돼 서버가 알려 줍니다.
+  const [streakDays, setStreakDays] = useState(MOCK_STUDENT.streakDays);
+
+  useEffect(() => {
+    if (!isQtApiReady) return;
+    fetchQtSummary()
+      .then((summary) => setStreakDays(summary.streakDays))
+      .catch((error) => console.warn('연속 출석을 불러오지 못했습니다.', error));
+  }, []);
 
   // 어제 쓴 다짐이 그대로 남아 있어야 아이가 이어서 쓰는 느낌을 받습니다.
   useEffect(() => {
@@ -100,11 +110,11 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
               <View style={styles.statsRow}>
                 <Pressable
                   accessibilityHint="누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다"
-                  accessibilityLabel={`연속 ${student.streakDays}일 출석, 만나 스티커 달력 가기`}
+                  accessibilityLabel={`연속 ${streakDays}일 출석, 만나 스티커 달력 가기`}
                   accessibilityRole="button"
                   onPress={handleMonthlyCalendarPress}
                   style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
-                  <Text style={styles.statText}>🔥 {student.streakDays}일</Text>
+                  <Text style={styles.statText}>🔥 {streakDays}일</Text>
                 </Pressable>
                 <Pressable
                   accessibilityHint="누르면 전신갑주를 구매할 수 있는 상점으로 이동합니다"

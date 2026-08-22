@@ -46,7 +46,9 @@ function NumberButton({ accessibilityLabel, disabled, label, onPress }) {
 
 const styles = StyleSheet.create({
   keypad: {
-    width: 276,
+    // 버튼 3개(76) + 사이 간격 2개(14) = 256. 카드 안에서 가운데로 놓습니다.
+    width: 256,
+    alignSelf: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',

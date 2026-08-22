@@ -30,6 +30,8 @@ interface ArmorContextValue {
   topTier?: ArmorTierKey;
   /** 서버에서 처음 상태를 받아오기 전인지 알려 줍니다. */
   isReady: boolean;
+  /** 다른 화면(QT 완료 등)에서 달란트가 바뀌었을 때 다시 읽어 옵니다. */
+  refresh: () => Promise<void>;
   earn: (amount: number, reason?: string) => Promise<void>;
   buy: (item: ArmorItem) => Promise<BuyResult>;
   upgrade: (item: ArmorItem) => Promise<UpgradeResult>;
@@ -102,6 +104,15 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
     if (isArmorApiReady || !isReady) return;
     saveJson(STORE_KEYS.armor, { talents, ownedTiers, equippedIds });
   }, [isReady, talents, ownedTiers, equippedIds]);
+
+  const refresh = useCallback(async () => {
+    if (!isArmorApiReady) return;
+    try {
+      applyServerState(await fetchArmorState());
+    } catch (error) {
+      console.warn('달란트·갑주 상태를 새로 읽지 못했습니다.', error);
+    }
+  }, [applyServerState]);
 
   const earn = useCallback(async (amount: number, reason = '미션 완료') => {
     if (!isArmorApiReady) {
@@ -197,8 +208,8 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
   }, [equippedArmor]);
 
   const value = useMemo<ArmorContextValue>(
-    () => ({ talents, ownedTiers, equippedIds, equippedArmor, topTier, isReady, earn, buy, upgrade, toggleEquip }),
-    [talents, ownedTiers, equippedIds, equippedArmor, topTier, isReady, earn, buy, upgrade, toggleEquip],
+    () => ({ talents, ownedTiers, equippedIds, equippedArmor, topTier, isReady, refresh, earn, buy, upgrade, toggleEquip }),
+    [talents, ownedTiers, equippedIds, equippedArmor, topTier, isReady, refresh, earn, buy, upgrade, toggleEquip],
   );
 
   return <ArmorContext.Provider value={value}>{children}</ArmorContext.Provider>;

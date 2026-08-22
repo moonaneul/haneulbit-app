@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { MOCK_FRIEND_QT_POSTS, REACTION_OPTIONS, type ReactionKey } from './qtData';
+import type { FriendQtPost } from '@/lib/qtApi';
+import { REACTION_OPTIONS, type ReactionKey } from './qtData';
 import { qtStyles as styles } from './qtStyles';
 
 interface QtFriendFeedProps {
   isUnlocked: boolean;
+  /** 나와 같은 날 QT를 마친 친구들의 나눔입니다. */
+  posts: FriendQtPost[];
 }
 
 /** 내 나눔 등록 여부에 따라 잠금 카드 또는 친구들의 QT 피드를 보여 줍니다. */
-export function QtFriendFeed({ isUnlocked }: QtFriendFeedProps) {
+export function QtFriendFeed({ isUnlocked, posts }: QtFriendFeedProps) {
   // 친구마다 마지막으로 고른 응원 스티커 한 개를 기억합니다.
   const [reactions, setReactions] = useState<Record<string, ReactionKey>>({});
 
@@ -25,7 +28,12 @@ export function QtFriendFeed({ isUnlocked }: QtFriendFeedProps) {
   return (
     <View>
       <Text style={styles.feedTitle}>🔓 친구들의 오늘 큐티</Text>
-      {MOCK_FRIEND_QT_POSTS.map((post) => (
+      {posts.length === 0 && (
+        <View style={[styles.card, styles.friendCard]}>
+          <Text style={styles.friendReflection}>아직 친구들의 나눔이 없어요. 오늘 첫 번째네요! 🌟</Text>
+        </View>
+      )}
+      {posts.map((post) => (
         <View key={post.id} style={[styles.card, styles.friendCard]}>
           <Text style={styles.friendName}>{post.name}</Text>
           <Text style={styles.friendReflection}>{post.reflection}</Text>

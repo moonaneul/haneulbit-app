@@ -37,4 +37,25 @@ export const MOCK_MONTHLY_STICKERS: DailyStickerRecord[] = Array.from(
   },
 );
 
+/**
+ * 서버가 준 완료 날짜('YYYY-MM-DD')로 이번 달 스티커를 만듭니다.
+ * 스티커 전용 표를 따로 두지 않고, QT 완료 기록 자체가 곧 스티커입니다.
+ */
+export function buildStickersFromDates(completedDates: string[]): DailyStickerRecord[] {
+  const completedDays = new Set(
+    completedDates
+      .map((date) => Number(date.slice(8, 10)))
+      .filter((day) => Number.isFinite(day)),
+  );
+  return Array.from({ length: MONTHLY_CALENDAR_INFO.daysInMonth }, (_, index) => {
+    const day = index + 1;
+    return {
+      day,
+      completed: completedDays.has(day),
+      isFuture: day > todayDate,
+      isToday: day === todayDate,
+    };
+  });
+}
+
 export const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];

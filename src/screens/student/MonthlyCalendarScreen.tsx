@@ -1,23 +1,39 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 
-import { MONTHLY_CALENDAR_INFO, MOCK_MONTHLY_STICKERS, WEEKDAY_LABELS } from './monthlyCalendarData';
+import { fetchQtSummary, isQtApiReady } from '@/lib/qtApi';
+
+import {
+  buildStickersFromDates,
+  MONTHLY_CALENDAR_INFO,
+  MOCK_MONTHLY_STICKERS,
+  WEEKDAY_LABELS,
+} from './monthlyCalendarData';
 import QtReminderCard from './QtReminderCard';
 import { monthlyCalendarStyles as styles } from './monthlyCalendarStyles';
 
 /** 매일 미션을 완료하면 만나 스티커가 쌓이는 월간 달력 화면입니다. */
 export default function MonthlyCalendarScreen() {
-  // 이번 달 진행 상황이 바뀌지 않는 한 다시 계산할 필요가 없어 useMemo로 감쌉니다.
+  // 스티커는 QT 완료 기록에서 옵니다. 연결 전에는 Mock 패턴을 그대로 보여 줍니다.
+  const [stickers, setStickers] = useState(isQtApiReady ? [] : MOCK_MONTHLY_STICKERS);
+
+  useEffect(() => {
+    if (!isQtApiReady) return;
+    fetchQtSummary()
+      .then((summary) => setStickers(buildStickersFromDates(summary.completedDates)))
+      .catch((error) => console.warn('출석 기록을 불러오지 못했습니다.', error));
+  }, []);
+
   const { completedCount, achievementRate } = useMemo(() => {
-    const completed = MOCK_MONTHLY_STICKERS.filter((record) => record.completed).length;
+    const completed = stickers.filter((record) => record.completed).length;
     // 매월 1일에 리셋되는 달성률은 "이번 달 지나간 날짜" 기준으로 계산합니다 (달란트는 별개로 계속 쌓임).
     const rate = MONTHLY_CALENDAR_INFO.today > 0
       ? Math.round((completed / MONTHLY_CALENDAR_INFO.today) * 100)
       : 0;
     return { completedCount: completed, achievementRate: rate };
-  }, []);
+  }, [stickers]);
 
   // 1일 앞에 빈 칸을 채워야 요일 줄이 맞아요.
   const leadingBlanks = Array.from({ length: MONTHLY_CALENDAR_INFO.firstWeekday }, (_, index) => index);
@@ -60,7 +76,7 @@ export default function MonthlyCalendarScreen() {
               {leadingBlanks.map((blankIndex) => (
                 <View key={`blank-${blankIndex}`} style={styles.dayCell} />
               ))}
-              {MOCK_MONTHLY_STICKERS.map((record) => (
+              {stickers.map((record) => (
                 <View key={record.day} style={styles.dayCell}>
                   <View
                     accessibilityLabel={`${record.day}일, ${record.completed ? '만나 스티커 완료' : record.isFuture ? '아직 오지 않은 날' : '미완료'}`}

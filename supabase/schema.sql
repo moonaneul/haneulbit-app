@@ -250,6 +250,184 @@ create table if not exists qt_completions (
 );
 
 -- =========================================================
+-- 3-1. QT 조회·완료 (달란트 지급까지 서버가 함께 처리)
+-- =========================================================
+
+-- 주어진 날짜에 읽을 QT 템플릿을 찾습니다.
+-- 날짜 계산을 따로 떼어 두면 어떤 날짜로도 확인할 수 있고, 아래 함수들이 같은 규칙을 씁니다.
+-- 주중(월~금)만 QT가 있고 주말에는 아무것도 돌려주지 않습니다.
+create or replace function qt_template_for(p_date date)
+returns weekly_qt_templates
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select * from weekly_qt_templates
+  where week_start_date = date_trunc('week', p_date)::date
+    and weekday = trim(lower(to_char(p_date, 'dy')))
+    and weekday not in ('sat', 'sun')
+    and is_published
+  limit 1;
+$$;
+
+-- 오늘 읽을 QT입니다. 주말이면 쉬는 날로 알려 줍니다.
+create or replace function get_today_qt()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  found_template weekly_qt_templates;
+  my_reflection text;
+begin
+  if extract(isodow from current_date) > 5 then
+    return jsonb_build_object('isRestDay', true, 'template', null);
+  end if;
+
+  found_template := qt_template_for(current_date);
+  if found_template.id is null then
+    return jsonb_build_object('isRestDay', false, 'template', null);
+  end if;
+
+  select reflection into my_reflection
+  from qt_completions
+  where student_id = me and template_id = found_template.id;
+
+  return jsonb_build_object(
+    'isRestDay', false,
+    'template', jsonb_build_object(
+      'id', found_template.id,
+      'reference', found_template.reference,
+      'verse', found_template.verse,
+      'teacherMessage', found_template.teacher_message,
+      'audioUrl', found_template.audio_url
+    ),
+    'myReflection', my_reflection
+  );
+end;
+$$;
+
+-- 연속 출석 일수와 이번 달 완료 날짜를 함께 돌려줍니다.
+-- 스티커 달력은 별도 표 없이 이 완료 기록을 날짜별로 세서 그립니다.
+create or replace function get_my_qt_summary(p_month date default null)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  target_month date := coalesce(p_month, date_trunc('month', current_date)::date);
+  cursor_date date;
+  streak int := 0;
+begin
+  if me is null then
+    return jsonb_build_object('streakDays', 0, 'completedDates', '[]'::jsonb);
+  end if;
+
+  -- 오늘 아직 안 했더라도 어제까지의 연속 기록은 살려 둡니다.
+  cursor_date := current_date;
+  if not exists (
+    select 1 from qt_completions where student_id = me and completed_at::date = cursor_date
+  ) then
+    cursor_date := cursor_date - 1;
+  end if;
+
+  -- 주말은 QT가 없으므로 건너뛰고, 주중에 빠진 날이 나오면 거기서 멈춥니다.
+  while cursor_date > current_date - 400 loop
+    if extract(isodow from cursor_date) <= 5 then
+      exit when not exists (
+        select 1 from qt_completions where student_id = me and completed_at::date = cursor_date
+      );
+      streak := streak + 1;
+    end if;
+    cursor_date := cursor_date - 1;
+  end loop;
+
+  return jsonb_build_object(
+    'streakDays', streak,
+    'completedDates', coalesce((
+      select jsonb_agg(distinct to_char(completed_at::date, 'YYYY-MM-DD'))
+      from qt_completions
+      where student_id = me
+        and date_trunc('month', completed_at) = date_trunc('month', target_month)
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+-- 나눔을 등록하고 달란트를 지급합니다.
+-- 완료 기록과 달란트를 같은 함수에서 처리해야, 앱이 "다 했다"고만 말해도
+-- 서버가 오늘 QT가 실제로 있는지, 이미 받지 않았는지 확인할 수 있습니다.
+create or replace function complete_qt(p_reflection text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  today_template uuid;
+  reward int := 10;
+  new_talents int;
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+  if p_reflection is null or length(trim(p_reflection)) = 0 then raise exception 'EMPTY_REFLECTION'; end if;
+
+  select id into today_template from qt_template_for(current_date);
+  if today_template is null then raise exception 'NO_QT_TODAY'; end if;
+
+  if exists (select 1 from qt_completions where student_id = me and template_id = today_template) then
+    raise exception 'ALREADY_DONE';
+  end if;
+
+  insert into qt_completions (student_id, template_id, reflection)
+  values (me, today_template, trim(p_reflection));
+
+  insert into talent_transactions (student_id, amount, reason)
+  values (me, reward, '3분 QT 나눔');
+  update students set talent_points = talent_points + reward
+  where id = me returning talent_points into new_talents;
+
+  return jsonb_build_object('talents', new_talents, 'summary', get_my_qt_summary());
+end;
+$$;
+
+-- 친구들의 오늘 나눔입니다. 내가 먼저 써야 볼 수 있게 서버에서 막습니다.
+create or replace function get_qt_friend_feed()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  today_template uuid;
+begin
+  select id into today_template from qt_template_for(current_date);
+  if today_template is null then return '[]'::jsonb; end if;
+
+  if not exists (select 1 from qt_completions where student_id = me and template_id = today_template) then
+    return '[]'::jsonb;
+  end if;
+
+  return coalesce((
+    select jsonb_agg(jsonb_build_object('id', c.id, 'name', s.name, 'reflection', c.reflection)
+                     order by c.completed_at)
+    from qt_completions c
+    join students s on s.id = c.student_id
+    where c.template_id = today_template and c.student_id <> me
+  ), '[]'::jsonb);
+end;
+$$;
+
+-- =========================================================
 -- 4. 2단계 WWJD 퀴즈
 -- wwjdQuizData.ts에 대응합니다.
 -- =========================================================
