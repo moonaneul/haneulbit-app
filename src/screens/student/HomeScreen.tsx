@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 import GlassCard from '@/components/ui/GlassCard';
 import { useArmor } from '@/context/ArmorProvider';
+import { STORE_KEYS, loadJson, saveJson } from '@/lib/localStore';
 import AvatarStage from './AvatarStage';
 import { MOCK_STUDENT, STUDENT_MISSIONS, type StudentMission } from './homeData';
 import { homeStyles as styles } from './homeStyles';
 import MissionGrid from './MissionGrid';
 import StatusMessageCard from './StatusMessageCard';
+
+/** 아직 한 줄 다짐을 써 본 적 없는 아이에게 보여 줄 예시 문장입니다. */
+const DEFAULT_STATUS_MESSAGE = '오늘도 말씀으로 승리하자! 🕊️';
 
 interface HomeScreenProps {
   studentName?: string;
@@ -28,8 +32,17 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   const student = { ...MOCK_STUDENT, name: studentName?.trim() || MOCK_STUDENT.name };
   // 아바타를 누를 때 응원 말풍선을 열고 닫는 상태입니다.
   const [isAvatarTalking, setIsAvatarTalking] = useState(true);
-  // DB 연결 전에는 수정한 한 줄 상태메시지를 현재 앱 세션 동안 보관합니다.
-  const [statusMessage, setStatusMessage] = useState('오늘도 말씀으로 승리하자! 🕊️');
+  const [statusMessage, setStatusMessage] = useState(DEFAULT_STATUS_MESSAGE);
+
+  // 어제 쓴 다짐이 그대로 남아 있어야 아이가 이어서 쓰는 느낌을 받습니다.
+  useEffect(() => {
+    loadJson(STORE_KEYS.statusMessage, DEFAULT_STATUS_MESSAGE).then(setStatusMessage);
+  }, []);
+
+  const handleSaveStatusMessage = (next: string) => {
+    setStatusMessage(next);
+    saveJson(STORE_KEYS.statusMessage, next);
+  };
 
   /** 콜백이 아직 연결되지 않은 메뉴는 친근한 안내창으로 대신 알려 줍니다. */
   const openOrNotice = (handler: (() => void) | undefined, title: string, failMessage: string) => {
@@ -115,7 +128,7 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
               <Text style={styles.shopButtonText}>달란트 상점 가기 🛡️</Text>
             </Pressable>
 
-            <StatusMessageCard message={statusMessage} onSave={setStatusMessage} onViewFeed={handleStatusFeedPress} />
+            <StatusMessageCard message={statusMessage} onSave={handleSaveStatusMessage} onViewFeed={handleStatusFeedPress} />
 
             <MissionGrid missions={STUDENT_MISSIONS} onMissionPress={handleMissionPress} />
 

@@ -1,10 +1,18 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { ITEM_TO_SLOT, type EquippedArmor } from '@/components/character/characterParts';
+import { STORE_KEYS, loadJson, saveJson } from '@/lib/localStore';
 import { ARMOR_TIERS, type ArmorItem, type ArmorTierKey } from '@/screens/student/armorShopData';
 
 /** 구매한 아이템 ID → 현재 티어 (구매하는 순간 'basic'을 받습니다) */
 type OwnedTiers = Partial<Record<string, ArmorTierKey>>;
+
+/** 기기에 저장해 두는 형태 (Supabase로 옮길 때 이 모양 그대로 테이블에 대응됩니다) */
+interface SavedArmorState {
+  talents: number;
+  ownedTiers: OwnedTiers;
+  equippedIds: string[];
+}
 
 interface ArmorContextValue {
   talents: number;
@@ -37,6 +45,25 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
   const [talents, setTalents] = useState(initialTalents);
   const [ownedTiers, setOwnedTiers] = useState<OwnedTiers>({});
   const [equippedIds, setEquippedIds] = useState<string[]>([]);
+  // 저장된 값을 아직 못 읽었는데 저장부터 하면 기본값이 기존 기록을 덮어씁니다.
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // 앱을 껐다 켜도 모아 둔 달란트와 사 둔 갑주가 그대로 남아 있게 합니다.
+  useEffect(() => {
+    loadJson<SavedArmorState | null>(STORE_KEYS.armor, null).then((saved) => {
+      if (saved && typeof saved.talents === 'number') {
+        setTalents(saved.talents);
+        setOwnedTiers(saved.ownedTiers ?? {});
+        setEquippedIds(saved.equippedIds ?? []);
+      }
+      setIsLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    saveJson(STORE_KEYS.armor, { talents, ownedTiers, equippedIds });
+  }, [isLoaded, talents, ownedTiers, equippedIds]);
 
   const earn = useCallback((amount: number) => {
     setTalents((current) => current + amount);

@@ -136,8 +136,11 @@ npx expo start --web   # 또는 --ios / --android
 지금까지 만든 모든 화면의 Mock 데이터에 대응하는 테이블·RLS 정책·인증 전략은
 [`supabase/schema.sql`](supabase/schema.sql)에 이미 준비돼 있습니다. 실제 프로젝트를 만들고
 연결하는 방법은 [`supabase/README.md`](supabase/README.md)를 따라 하면 됩니다. 아직 어떤 화면도
-실제 Supabase 프로젝트에 연결돼 있지 않으며, 연결 전까지는 앱을 켤 때마다 데이터가 초기 Mock 값으로
-돌아갑니다.
+실제 Supabase 프로젝트에 연결돼 있지 않습니다.
+
+다만 아이가 모은 **달란트·전신갑주·한 줄 다짐**은 [`src/lib/localStore.ts`](src/lib/localStore.ts)를 통해
+기기(AsyncStorage)에 저장되므로, 앱을 껐다 켜도 그대로 남아 있습니다. 나머지 화면(QT 기록, 감사 보물상자,
+마음 톡 등)은 아직 앱을 다시 켜면 초기 Mock 값으로 돌아갑니다.
 
 ---
 
