@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { containsUnsafeLanguage } from '@/data/contentSafety';
 import { MOCK_RECEIVED_PRAYERS, MY_MANITO_BUDDY } from './manitoData';
@@ -35,13 +36,14 @@ export default function ManitoScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={styles.title}>비밀 마니또 기도 배달 🤫</Text>
-              <Text style={styles.caption}>이번 주 나의 마니또를 몰래 위해 기도해요.</Text>
+              <Text style={styles.caption}>누구인지 비밀! 이번 주엔 이 친구를 위해 기도해 줘.</Text>
             </View>
 
             <View style={styles.buddyCard}>
@@ -55,7 +57,7 @@ export default function ManitoScreen() {
 
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>한 줄 기도 편지 쓰기</Text>
-              <Text style={styles.sectionGuide}>이름은 비밀! 따뜻한 기도 한 줄만 몰래 전해져요.</Text>
+              <Text style={styles.sectionGuide}>이름은 안 알려져. 마음만 살짝 전해질 거야.</Text>
               <TextInput
                 accessibilityLabel="마니또에게 보낼 한 줄 기도"
                 maxLength={MAX_PRAYER_LENGTH}
@@ -82,7 +84,7 @@ export default function ManitoScreen() {
 
             <View style={styles.inboxHeader}>
               <Text style={styles.sectionTitle}>나에게 온 비밀 기도 편지함 💌</Text>
-              <Text style={styles.sectionGuide}>누군가 나를 위해 몰래 기도해 주고 있어요.</Text>
+              <Text style={styles.sectionGuide}>누군가 너를 위해 조용히 기도하고 있어.</Text>
             </View>
             {MOCK_RECEIVED_PRAYERS.map((prayer) => (
               <View key={prayer.id} style={styles.prayerCard}>
@@ -110,5 +112,6 @@ export default function ManitoScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

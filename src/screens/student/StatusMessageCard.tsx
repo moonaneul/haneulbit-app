@@ -11,8 +11,10 @@ import {
   View,
 } from 'react-native';
 
+import GlassCard from '@/components/ui/GlassCard';
 import { BORDER_RADIUS, COLORS, SHADOWS } from '@/constants/theme';
 import { containsUnsafeLanguage } from '@/data/contentSafety';
+import { homeStyles } from './homeStyles';
 
 interface StatusMessageCardProps {
   message: string;
@@ -61,29 +63,29 @@ export default function StatusMessageCard({ message, onSave, onViewFeed }: Statu
 
   return (
     <>
-      <View style={styles.statusCard}>
-        <View style={styles.statusIcon}><Text style={styles.statusIconText}>🕊️</Text></View>
-        <View style={styles.statusContent}>
-          <Text style={styles.statusLabel}>나의 한 줄 다짐</Text>
-          <Text numberOfLines={2} style={styles.statusMessage}>{message}</Text>
+      <GlassCard style={homeStyles.statusCard}>
+        <View style={homeStyles.statusIcon}><Text style={homeStyles.statusIconText}>🕊️</Text></View>
+        <View style={homeStyles.statusContent}>
+          <Text style={homeStyles.statusLabel}>나의 한 줄 다짐</Text>
+          <Text numberOfLines={2} style={homeStyles.statusMessage}>{message}</Text>
         </View>
         <Pressable
           accessibilityLabel="상태메시지 수정"
           accessibilityRole="button"
           hitSlop={8}
           onPress={openEditor}
-          style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}>
-          <Text style={styles.editIcon}>✏️</Text>
+          style={({ pressed }) => [homeStyles.statusEditButton, pressed && styles.pressed]}>
+          <Text style={homeStyles.statusEditIcon}>✏️</Text>
         </Pressable>
-      </View>
+      </GlassCard>
 
       {onViewFeed && (
         <Pressable
           accessibilityLabel="12명 친구들의 한 줄 다짐 게시판 보기"
           accessibilityRole="button"
           onPress={onViewFeed}
-          style={({ pressed }) => [styles.feedLink, pressed && styles.pressed]}>
-          <Text style={styles.feedLinkText}>우리 마을 마음 게시판 보기 🌍</Text>
+          style={({ pressed }) => [homeStyles.feedLink, pressed && styles.pressed]}>
+          <Text style={homeStyles.feedLinkText}>우리 마을 마음 게시판 보기 🌍</Text>
         </Pressable>
       )}
 
@@ -123,20 +125,11 @@ export default function StatusMessageCard({ message, onSave, onViewFeed }: Statu
   );
 }
 
+// 카드 본체 스타일은 homeStyles와 GlassCard가 담당하고, 여기서는 수정 모달만 관리합니다.
 const styles = StyleSheet.create({
-  statusCard: { ...SHADOWS.soft, flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, padding: 15, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.primarySoft },
-  statusIcon: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.cardBackground },
-  statusIconText: { fontSize: 21 },
-  statusContent: { flex: 1 },
-  statusLabel: { color: COLORS.primary, fontSize: 11, fontWeight: '900' },
-  statusMessage: { color: COLORS.textPrimary, fontSize: 15, lineHeight: 21, fontWeight: '800', marginTop: 3 },
-  editButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.cardBackground },
-  editIcon: { fontSize: 18 },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
-  feedLink: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 4, paddingVertical: 4 },
-  feedLinkText: { color: COLORS.primary, fontSize: 13, fontWeight: '800' },
   modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(41, 42, 45, 0.35)' },
-  modalCard: { ...SHADOWS.soft, width: '100%', maxWidth: 420, alignItems: 'center', padding: 24, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.cardBackground },
+  modalCard: { ...SHADOWS.soft, width: '100%', maxWidth: 420, alignItems: 'center', padding: 24, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.surfaceOpaque },
   modalEmoji: { fontSize: 38 },
   modalTitle: { color: COLORS.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 8 },
   modalCaption: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '600', textAlign: 'center', marginTop: 6 },

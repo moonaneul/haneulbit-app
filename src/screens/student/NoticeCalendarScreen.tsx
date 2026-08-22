@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_CALENDAR_EVENTS, MOCK_NOTICES } from './noticeCalendarData';
 import { noticeCalendarStyles as styles } from './noticeCalendarStyles';
@@ -17,12 +18,13 @@ export default function NoticeCalendarScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('notice');
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>알림장 & 캘린더 📖</Text>
-            <Text style={styles.caption}>선생님 공지사항과 초등부 일정을 확인해요.</Text>
+            <Text style={styles.caption}>선생님이 알려주신 소식이야!</Text>
           </View>
 
           <View style={styles.tabRow}>
@@ -71,5 +73,6 @@ export default function NoticeCalendarScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import {
   MOCK_STUDENT_STATUSES,
@@ -56,6 +57,7 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
@@ -138,5 +140,6 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Image } from 'expo-image';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,8 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AnimatedPinFeedback from '@/components/auth/AnimatedPinFeedback';
 import PinKeypad from '@/components/auth/PinKeypad';
+import SkyScene from '@/components/scene/SkyScene';
 import AppButton from '@/components/ui/AppButton';
-import Surface from '@/components/ui/Surface';
+import GlassCard from '@/components/ui/GlassCard';
 import { COLORS } from '@/constants/theme';
 import { MOCK_LOGIN_PIN, MOCK_STUDENTS } from '@/data/mockStudents';
 import { loginStyles as styles } from './loginStyles';
@@ -67,6 +67,7 @@ export default function LoginScreen({ onLoginSuccess }) {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -80,14 +81,7 @@ export default function LoginScreen({ onLoginSuccess }) {
             <Text style={styles.subtitle}>예수님과 오늘도 함께 걸어가요</Text>
           </View>
 
-          <Image
-            accessibilityLabel="예수님이 두 아이의 손을 잡고 햇살 길을 함께 걷는 그림"
-            contentFit="cover"
-            source={require('@/assets/images/login-hero-jesus.png')}
-            style={styles.heroImage}
-          />
-
-          <Surface style={styles.card}>
+          <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
@@ -140,9 +134,10 @@ export default function LoginScreen({ onLoginSuccess }) {
               style={styles.loginButton}
               trailingText={isLoggingIn ? undefined : '→'}
             />
-          </Surface>
+          </GlassCard>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

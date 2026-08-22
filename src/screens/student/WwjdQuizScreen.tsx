@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { TODAY_WWJD_QUIZ, type QuizChoice } from './wwjdQuizData';
 import { wwjdQuizStyles as styles } from './wwjdQuizStyles';
@@ -60,6 +61,7 @@ export default function WwjdQuizScreen({ initialTalents = 150, onBack }: WwjdQui
   const question = step === 1 ? TODAY_WWJD_QUIZ.situation : TODAY_WWJD_QUIZ.versePrompt;
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
@@ -114,5 +116,6 @@ export default function WwjdQuizScreen({ initialTalents = 150, onBack }: WwjdQui
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

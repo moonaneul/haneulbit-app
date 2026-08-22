@@ -5,7 +5,7 @@ import {
 } from 'expo-router/build/react-navigation/stack';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { COLORS, Fonts, SHADOWS } from '@/constants/theme';
+import { COLORS, Fonts, SCENE, SHADOWS } from '@/constants/theme';
 import LoginScreen from '@/screens/auth/LoginScreen';
 import ArmorShopScreen from '@/screens/student/ArmorShopScreen';
 import GratitudeScreen from '@/screens/student/GratitudeScreen';
@@ -99,19 +99,16 @@ export default function StudentNavigator() {
     <Stack.Navigator
       initialRouteName="Login"
       screenOptions={{
-        cardStyle: { backgroundColor: COLORS.background },
+        cardStyle: { backgroundColor: SCENE.sky[0] },
         headerBackTitle: '뒤로',
-        headerStyle: { backgroundColor: COLORS.primarySoft },
+        headerStyle: { backgroundColor: SCENE.sky[0], elevation: 0, shadowOpacity: 0, borderBottomWidth: 0 },
         headerTintColor: COLORS.textPrimary,
         headerTitleAlign: 'center',
         headerTitleStyle: styles.headerTitle,
       }}>
       <Stack.Screen component={LoginRoute} name="Login" options={{ headerShown: false }} />
-      <Stack.Screen
-        component={HomeRoute}
-        name="Home"
-        options={{ headerLeft: () => null, title: '나의 하늘빛 마을 🌤️' }}
-      />
+      {/* 홈은 하늘빛 풍경이 화면 끝까지 채워지도록 헤더를 숨깁니다. */}
+      <Stack.Screen component={HomeRoute} name="Home" options={{ headerShown: false }} />
       <Stack.Screen component={QtScreen} name="Qt" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '오늘의 3분 QT 📖' })} />
       <Stack.Screen component={WwjdQuizScreen} name="WwjdQuiz" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: 'WWJD 퀴즈 🚦' })} />
       <Stack.Screen component={GratitudeScreen} name="Gratitude" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '감사 보물상자 🎁' })} />
@@ -135,6 +132,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   headerButtonPressed: { opacity: 0.7, transform: [{ scale: 0.97 }] },
-  headerButtonText: { color: COLORS.primary, fontFamily: Fonts.rounded, fontSize: 14, fontWeight: '800' },
-  headerTitle: { color: COLORS.textPrimary, fontFamily: Fonts.rounded, fontSize: 17, fontWeight: '800' },
+  headerButtonText: { color: COLORS.primary, fontFamily: Fonts.display, fontSize: 14 },
+  headerTitle: { color: COLORS.textPrimary, fontFamily: Fonts.display, fontSize: 17 },
 });

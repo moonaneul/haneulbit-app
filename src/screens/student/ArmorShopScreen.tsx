@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { ARMOR_ITEMS, ARMOR_TIERS, type ArmorItem, type ArmorTierKey } from './armorShopData';
 import { armorShopStyles as styles } from './armorShopStyles';
@@ -86,6 +87,7 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
   const hasAuraEquipped = equippedItems.some((item) => itemTiers[item.id] === 'light');
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
@@ -191,5 +193,6 @@ export default function ArmorShopScreen({ initialTalents = 150 }: ArmorShopScree
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

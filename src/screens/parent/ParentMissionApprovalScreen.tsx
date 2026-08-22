@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_HOME_MISSIONS, type HomeMission } from './parentData';
 import { parentMissionStyles as styles } from './parentMissionStyles';
@@ -21,12 +22,13 @@ export default function ParentMissionApprovalScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>가정 실천 미션 도장 ✅</Text>
-            <Text style={styles.caption}>집에서 실천한 미션을 확인하고 도장을 눌러 주세요.</Text>
+            <Text style={styles.caption}>집에서 잘 해냈는지 보고 도장을 찍어 주세요.</Text>
           </View>
 
           {missions.map((mission) => (
@@ -57,5 +59,6 @@ export default function ParentMissionApprovalScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

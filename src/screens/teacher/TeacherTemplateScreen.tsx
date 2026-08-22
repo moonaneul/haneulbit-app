@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_WEEKLY_TEMPLATE, WEEKDAYS, type DailyTemplateDraft, type Weekday } from './teacherTemplateData';
 import { teacherTemplateStyles as styles } from './teacherTemplateStyles';
@@ -53,13 +54,14 @@ export default function TeacherTemplateScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={styles.title}>주간 템플릿 등록 📝</Text>
-              <Text style={styles.caption}>요일마다 말씀을 적고 AI 음성과 함께 게시해요.</Text>
+              <Text style={styles.caption}>요일마다 말씀을 적어 두면 아이들이 그날 읽어요.</Text>
             </View>
 
             <View style={styles.dayRow}>
@@ -82,7 +84,7 @@ export default function TeacherTemplateScreen() {
 
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>말씀 내용</Text>
-              <Text style={styles.sectionGuide}>학생들이 3분 QT에서 만날 성경 구절과 본문을 적어 주세요.</Text>
+              <Text style={styles.sectionGuide}>아이들이 오늘 읽을 말씀을 적어 주세요.</Text>
 
               <Text style={styles.label}>성경 구절</Text>
               <TextInput
@@ -144,5 +146,6 @@ export default function TeacherTemplateScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

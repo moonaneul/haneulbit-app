@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { containsUnsafeLanguage, type MindTalkMessage, type StudentTalkThread } from './teacherMindTalkData';
 import { teacherMindTalkStyles as styles } from './teacherMindTalkStyles';
@@ -64,6 +65,7 @@ export default function TeacherMindTalkThreadScreen({ thread }: TeacherMindTalkT
   };
 
   return (
+    <SkyScene showHills={false}>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <View style={styles.threadContent}>
@@ -94,5 +96,6 @@ export default function TeacherMindTalkThreadScreen({ thread }: TeacherMindTalkT
         </View></View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

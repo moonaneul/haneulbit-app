@@ -4,7 +4,7 @@ import {
   type StackScreenProps,
 } from 'expo-router/build/react-navigation/stack';
 
-import { COLORS } from '@/constants/theme';
+import { COLORS, SCENE } from '@/constants/theme';
 import ParentLoginScreen from '@/screens/auth/ParentLoginScreen';
 import ParentHomeScreen, { type ParentMenuKey } from '@/screens/parent/ParentHomeScreen';
 import ParentMissionApprovalScreen from '@/screens/parent/ParentMissionApprovalScreen';
@@ -47,9 +47,9 @@ export default function ParentNavigator() {
     <Stack.Navigator
       initialRouteName="ParentLogin"
       screenOptions={{
-        cardStyle: { backgroundColor: COLORS.background },
+        cardStyle: { backgroundColor: SCENE.sky[0] },
         headerBackTitle: '뒤로',
-        headerStyle: { backgroundColor: COLORS.primarySoft },
+        headerStyle: { backgroundColor: SCENE.sky[0], elevation: 0, shadowOpacity: 0, borderBottomWidth: 0 },
         headerTintColor: COLORS.textPrimary,
         headerTitleAlign: 'center',
       }}>

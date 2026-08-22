@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { containsUnsafeLanguage, MOCK_MIND_TALK_MESSAGES, type MindTalkMessage } from './mindTalkData';
 import { mindTalkStyles as styles } from './mindTalkStyles';
@@ -53,6 +54,7 @@ export default function MindTalkScreen({ onBack }: MindTalkScreenProps) {
   };
 
   return (
+    <SkyScene showHills={false}>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <View style={styles.content}>
@@ -79,5 +81,6 @@ export default function MindTalkScreen({ onBack }: MindTalkScreenProps) {
         </View></View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

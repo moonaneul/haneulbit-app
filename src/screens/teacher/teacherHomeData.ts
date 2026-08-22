@@ -29,10 +29,10 @@ export type TeacherShortcut = 'students' | 'template' | 'mindTalk' | 'safety' | 
 
 /** 각 관리 기능은 추후 실제 화면으로 연결할 수 있도록 고유 id를 가집니다. */
 export const TEACHER_SHORTCUTS: { id: TeacherShortcut; emoji: string; title: string; description: string; color: string }[] = [
-  { id: 'students', emoji: '👦', title: '학생 계정 관리', description: '새 학생 등록 및 PIN 초기화', color: '#EAF0F6' },
-  { id: 'template', emoji: '📝', title: '주간 템플릿 등록', description: 'AI 음성 큐티 & 퀴즈 업로드', color: '#FFF2ED' },
-  { id: 'noticeCalendar', emoji: '📖', title: '알림장 & 캘린더 관리', description: '공지사항 작성, 일정 등록/수정/삭제', color: '#FFF8E4' },
-  { id: 'video', emoji: '🎬', title: '영상 등록 관리', description: '율동 & 성경 이야기 영상 추천', color: '#EAF4DE' },
-  { id: 'mindTalk', emoji: '💬', title: '1:1 마음 톡 목록', description: '아이들이 보낸 비밀 상담 피드', color: '#FFF1F0' },
-  { id: 'safety', emoji: '🚨', title: 'AI 안전 모니터링', description: '비속어 감지 게시글 검수함', color: '#EFF7F4' },
+  { id: 'students', emoji: '👦', title: '학생 계정 관리', description: '새 학생을 등록하고 PIN을 새로 줘요', color: '#EAF0F6' },
+  { id: 'template', emoji: '📝', title: '주간 템플릿 등록', description: '이번 주 말씀과 퀴즈를 올려요', color: '#FFF2ED' },
+  { id: 'noticeCalendar', emoji: '📖', title: '알림장 & 캘린더 관리', description: '공지를 쓰고 일정을 정리해요', color: '#FFF8E4' },
+  { id: 'video', emoji: '🎬', title: '영상 등록 관리', description: '아이들에게 보여줄 영상을 골라요', color: '#EAF4DE' },
+  { id: 'mindTalk', emoji: '💬', title: '1:1 마음 톡 목록', description: '아이들이 몰래 보낸 이야기예요', color: '#FFF1F0' },
+  { id: 'safety', emoji: '🚨', title: 'AI 안전 모니터링', description: '걱정되는 말이 없는지 살펴봐요', color: '#EFF7F4' },
 ];

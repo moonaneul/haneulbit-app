@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_TALK_THREADS, type StudentTalkThread } from './teacherMindTalkData';
 import { teacherMindTalkStyles as styles } from './teacherMindTalkStyles';
@@ -14,12 +15,13 @@ export default function TeacherMindTalkListScreen({ onThreadPress }: TeacherMind
   const sortedThreads = [...MOCK_TALK_THREADS].sort((a, b) => Number(b.hasUnread) - Number(a.hasUnread));
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>1:1 마음 톡 목록 💬</Text>
-            <Text style={styles.caption}>아이들이 보낸 비밀 상담과 기도제목을 확인하고 답해 주세요.</Text>
+            <Text style={styles.caption}>아이들이 조용히 건넨 이야기예요. 따뜻하게 답해 주세요.</Text>
           </View>
 
           <View style={styles.threadList}>
@@ -45,5 +47,6 @@ export default function TeacherMindTalkListScreen({ onThreadPress }: TeacherMind
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

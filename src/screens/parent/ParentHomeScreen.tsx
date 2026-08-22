@@ -1,5 +1,6 @@
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { COLORS } from '@/constants/theme';
 import { MOCK_LINKED_CHILD } from './parentData';
@@ -8,9 +9,9 @@ import { parentHomeStyles as styles } from './parentHomeStyles';
 export type ParentMenuKey = 'report' | 'notice' | 'mission';
 
 const PARENT_MENU: { key: ParentMenuKey; emoji: string; title: string; description: string; color: string }[] = [
-  { key: 'report', emoji: '🌱', title: '영적 자람 리포트', description: '이번 달 QT 이행률과 성찰 기록을 확인해요', color: COLORS.accentSoft },
-  { key: 'notice', emoji: '📖', title: '알림장 & 캘린더', description: '선생님 공지사항과 초등부 일정을 확인해요', color: '#FFF8E4' },
-  { key: 'mission', emoji: '✅', title: '가정 실천 미션 도장', description: '집에서 실천한 미션을 확인하고 승인해요', color: COLORS.primarySoft },
+  { key: 'report', emoji: '🌱', title: '영적 자람 리포트', description: '이번 달에 얼마나 했는지, 뭘 느꼈는지 볼 수 있어요', color: COLORS.accentSoft },
+  { key: 'notice', emoji: '📖', title: '알림장 & 캘린더', description: '선생님이 올린 소식이랑 이번 달 일정이에요', color: '#FFF8E4' },
+  { key: 'mission', emoji: '✅', title: '가정 실천 미션 도장', description: '집에서 한 걸 확인하고 도장 찍어 주세요', color: COLORS.primarySoft },
 ];
 
 interface ParentHomeScreenProps {
@@ -34,6 +35,7 @@ export default function ParentHomeScreen({ onMenuPress }: ParentHomeScreenProps)
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
@@ -48,7 +50,7 @@ export default function ParentHomeScreen({ onMenuPress }: ParentHomeScreenProps)
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>부모님 메뉴 🏡</Text>
-            <Text style={styles.sectionCaption}>자녀의 신앙 성장을 함께 살펴보아요.</Text>
+            <Text style={styles.sectionCaption}>우리 아이가 요즘 어떻게 지내는지 볼까요?</Text>
           </View>
 
           <View style={styles.menuList}>
@@ -71,5 +73,6 @@ export default function ParentHomeScreen({ onMenuPress }: ParentHomeScreenProps)
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

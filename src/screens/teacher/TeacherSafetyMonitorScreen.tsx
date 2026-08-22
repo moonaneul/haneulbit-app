@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_FLAGGED_POSTS, SOURCE_LABELS, type FlaggedPost, type FlaggedStatus } from './teacherSafetyData';
 import { teacherSafetyStyles as styles } from './teacherSafetyStyles';
@@ -30,12 +31,13 @@ export default function TeacherSafetyMonitorScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>AI 안전 모니터링 🚨</Text>
-            <Text style={styles.caption}>아이들 글에서 AI가 먼저 감지한 표현을 선생님이 최종 확인해요.</Text>
+            <Text style={styles.caption}>AI가 먼저 걸러낸 글이에요. 선생님이 마지막으로 봐 주세요.</Text>
           </View>
 
           <View style={styles.infoCard}>
@@ -116,5 +118,6 @@ export default function TeacherSafetyMonitorScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

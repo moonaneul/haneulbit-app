@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_LINKED_CHILD, MOCK_MONTHLY_REPORT } from './parentData';
 import { parentReportStyles as styles } from './parentReportStyles';
@@ -13,12 +14,13 @@ export default function ParentReportScreen() {
   );
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>{MOCK_LINKED_CHILD.name}의 영적 자람 리포트 🌱</Text>
-            <Text style={styles.caption}>이번 달 QT 이행률과 말씀 성찰 기록을 확인해요.</Text>
+            <Text style={styles.caption}>이번 달에 얼마나 꾸준히 했는지 볼 수 있어요.</Text>
           </View>
 
           <View style={styles.summaryCard}>
@@ -37,7 +39,7 @@ export default function ParentReportScreen() {
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>최근 성찰 기록 ✍️</Text>
-            <Text style={styles.sectionCaption}>QT를 마친 뒤 아이가 직접 남긴 한 줄 나눔이에요.</Text>
+            <Text style={styles.sectionCaption}>말씀을 읽고 아이가 직접 쓴 이야기예요.</Text>
           </View>
           {MOCK_MONTHLY_REPORT.reflections.map((reflection) => (
             <View key={reflection.id} style={styles.reflectionCard}>
@@ -51,5 +53,6 @@ export default function ParentReportScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

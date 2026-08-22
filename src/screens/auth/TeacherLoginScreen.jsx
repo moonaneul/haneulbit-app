@@ -9,9 +9,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import AppButton from '@/components/ui/AppButton';
-import Surface from '@/components/ui/Surface';
+import GlassCard from '@/components/ui/GlassCard';
 import { COLORS } from '@/constants/theme';
 import { MOCK_TEACHER_PASSWORD } from '@/data/mockTeacher';
 import { teacherLoginStyles as styles } from './teacherLoginStyles';
@@ -44,12 +45,13 @@ export default function TeacherLoginScreen({ onLoginSuccess }) {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Surface style={styles.card}>
+          <GlassCard style={styles.card}>
             <Text style={styles.eyebrow}>TEACHER ADMIN</Text>
             <Text style={styles.title}>선생님, 안녕하세요 ✝️</Text>
             <Text style={styles.subtitle}>관리자 비밀번호를 입력하고 대시보드로 들어가요</Text>
@@ -78,9 +80,10 @@ export default function TeacherLoginScreen({ onLoginSuccess }) {
               style={styles.loginButton}
               trailingText={isLoggingIn ? undefined : '→'}
             />
-          </Surface>
+          </GlassCard>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

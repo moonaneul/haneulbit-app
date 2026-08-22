@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { REACTION_OPTIONS, type ReactionKey } from '@/data/reactions';
 import { MOCK_COMMUNITY_STATUS_POSTS } from './statusFeedData';
@@ -21,13 +22,14 @@ export default function StatusFeedScreen({ myName, myMessage }: StatusFeedScreen
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>우리 마을 마음 게시판 🌍</Text>
             <Text style={styles.caption}>
-              친구의 다짐에는 글 댓글 대신 응원 스티커로 마음을 전해요!
+              친구 다짐에 스티커로 마음을 전해 줘!
             </Text>
           </View>
 
@@ -81,5 +83,6 @@ export default function StatusFeedScreen({ myName, myMessage }: StatusFeedScreen
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

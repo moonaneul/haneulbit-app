@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MONTHLY_CALENDAR_INFO, MOCK_MONTHLY_STICKERS, WEEKDAY_LABELS } from './monthlyCalendarData';
 import { monthlyCalendarStyles as styles } from './monthlyCalendarStyles';
@@ -21,12 +22,13 @@ export default function MonthlyCalendarScreen() {
   const leadingBlanks = Array.from({ length: MONTHLY_CALENDAR_INFO.firstWeekday }, (_, index) => index);
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>만나 스티커 달력 🍞</Text>
-            <Text style={styles.caption}>매일 미션을 완료하면 만나 스티커가 쌓여요!</Text>
+            <Text style={styles.caption}>하루하루 해낼 때마다 스티커가 하나씩 붙어!</Text>
           </View>
 
           <View style={styles.summaryCard}>
@@ -84,5 +86,6 @@ export default function MonthlyCalendarScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

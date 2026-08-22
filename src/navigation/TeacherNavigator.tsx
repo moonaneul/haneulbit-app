@@ -4,7 +4,7 @@ import {
   type StackScreenProps,
 } from 'expo-router/build/react-navigation/stack';
 
-import { COLORS } from '@/constants/theme';
+import { COLORS, SCENE } from '@/constants/theme';
 import TeacherLoginScreen from '@/screens/auth/TeacherLoginScreen';
 import { MOCK_TALK_THREADS } from '@/screens/teacher/teacherMindTalkData';
 import TeacherHomeScreen from '@/screens/teacher/TeacherHomeScreen';
@@ -75,9 +75,9 @@ export default function TeacherNavigator() {
     <Stack.Navigator
       initialRouteName="TeacherLogin"
       screenOptions={{
-        cardStyle: { backgroundColor: COLORS.background },
+        cardStyle: { backgroundColor: SCENE.sky[0] },
         headerBackTitle: '뒤로',
-        headerStyle: { backgroundColor: COLORS.primarySoft },
+        headerStyle: { backgroundColor: SCENE.sky[0], elevation: 0, shadowOpacity: 0, borderBottomWidth: 0 },
         headerTintColor: COLORS.textPrimary,
         headerTitleAlign: 'center',
       }}>

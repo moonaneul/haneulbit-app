@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import AvatarCard from './AvatarCard';
+import SkyScene from '@/components/scene/SkyScene';
+import GlassCard from '@/components/ui/GlassCard';
+import AvatarStage from './AvatarStage';
 import { MOCK_STUDENT, STUDENT_MISSIONS, type StudentMission } from './homeData';
 import { homeStyles as styles } from './homeStyles';
 import MissionGrid from './MissionGrid';
@@ -27,75 +28,30 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   // DB 연결 전에는 수정한 한 줄 상태메시지를 현재 앱 세션 동안 보관합니다.
   const [statusMessage, setStatusMessage] = useState('오늘도 말씀으로 승리하자! 🕊️');
 
-  /** 달란트 배지와 전신갑주 버튼이 같은 상점 이동 로직을 공유합니다. */
-  const handleArmorShopPress = () => {
+  /** 콜백이 아직 연결되지 않은 메뉴는 친근한 안내창으로 대신 알려 줍니다. */
+  const openOrNotice = (handler: (() => void) | undefined, title: string, failMessage: string) => {
     try {
-      if (onArmorShopPress) {
-        onArmorShopPress();
+      if (handler) {
+        handler();
         return;
       }
-      Alert.alert('달란트 상점', '상점 화면을 준비하고 있어요 🌸');
+      Alert.alert(title, '화면을 준비하고 있어요 🌸');
     } catch (error) {
-      console.warn('달란트 상점으로 이동하는 중 오류가 발생했습니다.', error);
+      console.warn(failMessage, error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
     }
   };
 
-  /** 상태메시지 카드와 마을 게시판 진입이 같은 콜백을 공유합니다. */
-  const handleStatusFeedPress = () => {
-    try {
-      if (onStatusFeedPress) {
-        onStatusFeedPress(student.name, statusMessage);
-        return;
-      }
-      Alert.alert('마을 게시판', '게시판 화면을 준비하고 있어요 🌸');
-    } catch (error) {
-      console.warn('마을 게시판으로 이동하는 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
-    }
-  };
-
-  /** 알림장 & 캘린더 배너는 아직 콜백이 없으면 준비 중 안내창을 보여 줍니다. */
-  const handleNoticeCalendarPress = () => {
-    try {
-      if (onNoticeCalendarPress) {
-        onNoticeCalendarPress();
-        return;
-      }
-      Alert.alert('알림장 & 캘린더', '화면을 준비하고 있어요 🌸');
-    } catch (error) {
-      console.warn('알림장 & 캘린더로 이동하는 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
-    }
-  };
-
-  /** 연속 출석 배지를 누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다. */
-  const handleMonthlyCalendarPress = () => {
-    try {
-      if (onMonthlyCalendarPress) {
-        onMonthlyCalendarPress();
-        return;
-      }
-      Alert.alert('만나 스티커 달력', '화면을 준비하고 있어요 🌸');
-    } catch (error) {
-      console.warn('만나 스티커 달력으로 이동하는 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
-    }
-  };
-
-  /** 비밀 마니또 배너는 아직 콜백이 없으면 준비 중 안내창을 보여 줍니다. */
-  const handleManitoPress = () => {
-    try {
-      if (onManitoPress) {
-        onManitoPress();
-        return;
-      }
-      Alert.alert('비밀 마니또', '화면을 준비하고 있어요 🌸');
-    } catch (error) {
-      console.warn('비밀 마니또로 이동하는 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
-    }
-  };
+  const handleArmorShopPress = () => openOrNotice(onArmorShopPress, '달란트 상점', '달란트 상점으로 이동하는 중 오류가 발생했습니다.');
+  const handleNoticeCalendarPress = () => openOrNotice(onNoticeCalendarPress, '알림장 & 캘린더', '알림장 & 캘린더로 이동하는 중 오류가 발생했습니다.');
+  const handleMonthlyCalendarPress = () => openOrNotice(onMonthlyCalendarPress, '만나 스티커 달력', '만나 스티커 달력으로 이동하는 중 오류가 발생했습니다.');
+  const handleManitoPress = () => openOrNotice(onManitoPress, '비밀 마니또', '비밀 마니또로 이동하는 중 오류가 발생했습니다.');
+  const handleStatusFeedPress = () =>
+    openOrNotice(
+      onStatusFeedPress && (() => onStatusFeedPress(student.name, statusMessage)),
+      '마을 게시판',
+      '마을 게시판으로 이동하는 중 오류가 발생했습니다.',
+    );
 
   // 아직 실제 화면이 없는 미션은 친근한 안내창으로 터치 동작을 확인합니다.
   const handleMissionPress = (mission: StudentMission) => {
@@ -113,73 +69,85 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
-          <View style={styles.profileBar}>
-            <View style={styles.profileIdentity}>
-              <View style={styles.profileAvatar}><Text style={styles.profileInitial}>{student.name[0]}</Text></View>
-              <View>
+    <SkyScene>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <GlassCard style={styles.header}>
+              <View style={styles.headerAvatar}>
+                <Text style={styles.headerAvatarText}>{student.name[0]}</Text>
+              </View>
+              <View style={styles.headerIdentity}>
                 <Text style={styles.greeting}>샬롬, 반가워요!</Text>
                 <Text style={styles.studentName}>{student.name}</Text>
               </View>
-            </View>
-            <View style={styles.statsRow}>
-              <Pressable
-                accessibilityHint="누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다"
-                accessibilityLabel={`연속 ${student.streakDays}일 출석, 만나 스티커 달력 가기`}
-                accessibilityRole="button"
-                onPress={handleMonthlyCalendarPress}
-                style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
-                <Text style={styles.statText}>🔥 {student.streakDays}일</Text>
-              </Pressable>
-              <Pressable
-                accessibilityHint="누르면 전신갑주를 구매할 수 있는 상점으로 이동합니다"
-                accessibilityLabel={`내 달란트 ${student.talentPoints}포인트, 달란트 상점 가기`}
-                accessibilityRole="button"
-                onPress={handleArmorShopPress}
-                style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
-                <Text style={styles.statText}>🪙 {student.talentPoints}pt</Text>
-              </Pressable>
-            </View>
+              <View style={styles.statsRow}>
+                <Pressable
+                  accessibilityHint="누르면 만나 스티커가 쌓이는 월간 달력으로 이동합니다"
+                  accessibilityLabel={`연속 ${student.streakDays}일 출석, 만나 스티커 달력 가기`}
+                  accessibilityRole="button"
+                  onPress={handleMonthlyCalendarPress}
+                  style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
+                  <Text style={styles.statText}>🔥 {student.streakDays}일</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityHint="누르면 전신갑주를 구매할 수 있는 상점으로 이동합니다"
+                  accessibilityLabel={`내 달란트 ${student.talentPoints}포인트, 달란트 상점 가기`}
+                  accessibilityRole="button"
+                  onPress={handleArmorShopPress}
+                  style={({ pressed }) => [styles.statBadge, pressed && styles.statBadgePressed]}>
+                  <Text style={styles.statText}>🪙 {student.talentPoints}pt</Text>
+                </Pressable>
+              </View>
+            </GlassCard>
+
+            <AvatarStage isTalking={isAvatarTalking} onPress={() => setIsAvatarTalking((current) => !current)} />
+
+            <Pressable
+              accessibilityHint="달란트로 전신갑주를 구매하고 착용할 수 있습니다"
+              accessibilityLabel="달란트 상점 가기"
+              accessibilityRole="button"
+              onPress={handleArmorShopPress}
+              style={({ pressed }) => [styles.shopButton, pressed && styles.avatarPressed]}>
+              <Text style={styles.shopButtonText}>달란트 상점 가기 🛡️</Text>
+            </Pressable>
+
+            <StatusMessageCard message={statusMessage} onSave={setStatusMessage} onViewFeed={handleStatusFeedPress} />
+
+            <MissionGrid missions={STUDENT_MISSIONS} onMissionPress={handleMissionPress} />
+
+            <Pressable
+              accessibilityLabel="알림장 & 캘린더, 선생님 공지사항과 초등부 일정 확인하기"
+              accessibilityRole="button"
+              onPress={handleNoticeCalendarPress}
+              style={({ pressed }) => [pressed && styles.noticeBannerPressed]}>
+              <GlassCard style={styles.noticeBanner}>
+                <Text style={styles.noticeBannerEmoji}>📋</Text>
+                <View style={styles.noticeBannerCopy}>
+                  <Text style={styles.noticeBannerTitle}>알림장 & 캘린더</Text>
+                  <Text style={styles.noticeBannerDescription}>선생님이 알려주신 소식 보러 가기</Text>
+                </View>
+                <Text style={styles.noticeBannerArrow}>›</Text>
+              </GlassCard>
+            </Pressable>
+
+            <Pressable
+              accessibilityLabel="비밀 마니또, 이번 주 마니또에게 몰래 기도 배달하기"
+              accessibilityRole="button"
+              onPress={handleManitoPress}
+              style={({ pressed }) => [pressed && styles.noticeBannerPressed]}>
+              <GlassCard style={styles.noticeBanner}>
+                <Text style={styles.noticeBannerEmoji}>🤫</Text>
+                <View style={styles.noticeBannerCopy}>
+                  <Text style={styles.noticeBannerTitle}>비밀 마니또</Text>
+                  <Text style={styles.noticeBannerDescription}>내 마니또한테 몰래 기도 보내기</Text>
+                </View>
+                <Text style={styles.noticeBannerArrow}>›</Text>
+              </GlassCard>
+            </Pressable>
           </View>
-
-          <StatusMessageCard message={statusMessage} onSave={setStatusMessage} onViewFeed={handleStatusFeedPress} />
-
-          <AvatarCard
-            isTalking={isAvatarTalking}
-            onPress={() => setIsAvatarTalking((current) => !current)}
-            onShopPress={handleArmorShopPress}
-          />
-          <MissionGrid missions={STUDENT_MISSIONS} onMissionPress={handleMissionPress} />
-
-          <Pressable
-            accessibilityLabel="알림장 & 캘린더, 선생님 공지사항과 초등부 일정 확인하기"
-            accessibilityRole="button"
-            onPress={handleNoticeCalendarPress}
-            style={({ pressed }) => [styles.noticeBanner, pressed && styles.noticeBannerPressed]}>
-            <Text style={styles.noticeBannerEmoji}>📋</Text>
-            <View style={styles.noticeBannerCopy}>
-              <Text style={styles.noticeBannerTitle}>알림장 & 캘린더</Text>
-              <Text style={styles.noticeBannerDescription}>선생님 공지사항과 이번 달 일정을 확인해요</Text>
-            </View>
-            <Text style={styles.noticeBannerArrow}>›</Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityLabel="비밀 마니또, 이번 주 마니또에게 몰래 기도 배달하기"
-            accessibilityRole="button"
-            onPress={handleManitoPress}
-            style={({ pressed }) => [styles.noticeBanner, styles.manitoBanner, pressed && styles.noticeBannerPressed]}>
-            <Text style={styles.noticeBannerEmoji}>🤫</Text>
-            <View style={styles.noticeBannerCopy}>
-              <Text style={styles.noticeBannerTitle}>비밀 마니또</Text>
-              <Text style={styles.noticeBannerDescription}>이번 주 마니또에게 몰래 기도를 배달해요</Text>
-            </View>
-            <Text style={styles.noticeBannerArrow}>›</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </SkyScene>
   );
 }

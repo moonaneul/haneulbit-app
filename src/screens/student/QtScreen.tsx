@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { QtFriendFeed } from './QtFriendFeed';
 import { containsUnsafeLanguage, TODAY_QT } from './qtData';
@@ -79,6 +80,7 @@ export default function QtScreen({ onBack }: QtScreenProps) {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -183,5 +185,6 @@ export default function QtScreen({ onBack }: QtScreenProps) {
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

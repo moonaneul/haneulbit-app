@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { AVATAR_OPTIONS, DEFAULT_STUDENT_PIN, MOCK_MANAGED_STUDENTS, type ManagedStudent } from './teacherStudentManageData';
 import { teacherStudentManageStyles as styles } from './teacherStudentManageStyles';
@@ -50,12 +51,13 @@ export default function TeacherStudentManageScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>학생 계정 관리 👦👧</Text>
-            <Text style={styles.caption}>새 학생을 등록하거나 PIN을 초기화해요.</Text>
+            <Text style={styles.caption}>새 친구를 추가하거나, PIN을 잊었을 때 새로 줄 수 있어요.</Text>
           </View>
 
           <Pressable
@@ -92,7 +94,7 @@ export default function TeacherStudentManageScreen() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>새 학생 등록하기</Text>
-            <Text style={styles.modalCaption}>이름과 아바타를 고르면 초기 PIN 0000으로 계정이 만들어져요.</Text>
+            <Text style={styles.modalCaption}>이름이랑 얼굴만 정하면 끝! PIN은 0000으로 시작해요.</Text>
 
             <Text style={styles.modalLabel}>이름</Text>
             <TextInput
@@ -143,5 +145,6 @@ export default function TeacherStudentManageScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

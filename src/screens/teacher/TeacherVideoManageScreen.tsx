@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_VIDEOS, type RecommendedVideo, type VideoCategory } from '@/data/videos';
 import { teacherContentManageStyles as styles } from './teacherContentManageStyles';
@@ -41,7 +42,7 @@ export default function TeacherVideoManageScreen() {
       };
       setVideos((current) => [newVideo, ...current]);
       setIsModalVisible(false);
-      Alert.alert('영상을 등록했어요 🎬', '학생들이 감사 보물상자 화면에서 바로 볼 수 있어요.');
+      Alert.alert('영상을 등록했어요 🎬', '아이들이 감사 보물상자에서 바로 볼 수 있어요.');
     } catch (error) {
       console.warn('추천 영상을 등록하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -58,12 +59,13 @@ export default function TeacherVideoManageScreen() {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>영상 등록 관리 🎬</Text>
-            <Text style={styles.caption}>어린이 율동·성경 이야기 유튜브 영상을 추천해요.</Text>
+            <Text style={styles.caption}>아이들이 볼 율동이나 성경 이야기 영상을 골라 주세요.</Text>
           </View>
 
           <Pressable accessibilityLabel="새 영상 등록하기" accessibilityRole="button" onPress={openModal} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
@@ -136,5 +138,6 @@ export default function TeacherVideoManageScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

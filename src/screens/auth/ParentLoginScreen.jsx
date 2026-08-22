@@ -9,9 +9,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import AppButton from '@/components/ui/AppButton';
-import Surface from '@/components/ui/Surface';
+import GlassCard from '@/components/ui/GlassCard';
 import { COLORS } from '@/constants/theme';
 import { MOCK_CHILD_LINK_CODE } from '@/data/mockParent';
 import { parentLoginStyles as styles } from './parentLoginStyles';
@@ -45,12 +46,13 @@ export default function ParentLoginScreen({ onLoginSuccess }) {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Surface style={styles.card}>
+          <GlassCard style={styles.card}>
             <Text style={styles.eyebrow}>PARENT</Text>
             <Text style={styles.title}>부모님, 안녕하세요 🏡</Text>
             <Text style={styles.subtitle}>휴대폰 번호와 자녀 연동 코드로 들어가요</Text>
@@ -89,9 +91,10 @@ export default function ParentLoginScreen({ onLoginSuccess }) {
               style={styles.loginButton}
               trailingText={isLoggingIn ? undefined : '→'}
             />
-          </Surface>
+          </GlassCard>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

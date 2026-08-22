@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import {
   containsUnsafeLanguage,
@@ -96,6 +97,7 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -204,5 +206,6 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
         </View></View>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }

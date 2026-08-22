@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyScene from '@/components/scene/SkyScene';
 
 import { MOCK_CALENDAR_EVENTS, MOCK_NOTICES, type CalendarEvent, type NoticePost } from '@/data/noticeCalendar';
 import { teacherContentManageStyles as styles } from './teacherContentManageStyles';
@@ -62,7 +63,7 @@ export default function TeacherNoticeCalendarManageScreen() {
         ]);
       }
       setIsNoticeModalVisible(false);
-      Alert.alert(editingNoticeId ? '공지사항을 수정했어요 ✏️' : '공지사항을 올렸어요 📋', '학생과 부모님 화면에 바로 나타나요.');
+      Alert.alert(editingNoticeId ? '공지사항을 수정했어요 ✏️' : '공지사항을 올렸어요 📋', '아이들과 부모님이 바로 볼 수 있어요.');
     } catch (error) {
       console.warn('공지사항을 저장하는 중 오류가 발생했습니다.', error);
       Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
@@ -126,12 +127,13 @@ export default function TeacherNoticeCalendarManageScreen() {
   const canSaveEvent = eventDraft.title.trim().length > 0 && eventDraft.date.trim().length > 0 && eventDraft.detail.trim().length > 0;
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>알림장 & 캘린더 관리 📖</Text>
-            <Text style={styles.caption}>공지사항과 초등부 일정을 작성·수정·삭제해요.</Text>
+            <Text style={styles.caption}>아이들에게 전할 소식과 일정을 여기서 정리해요.</Text>
           </View>
 
           <View style={styles.tabRow}>
@@ -215,7 +217,7 @@ export default function TeacherNoticeCalendarManageScreen() {
             <TextInput accessibilityLabel="공지 제목" onChangeText={(text) => setNoticeDraft((current) => ({ ...current, title: text }))} placeholder="예: 이번 주 준비물 안내" placeholderTextColor="#96918A" style={styles.input} value={noticeDraft.title} />
 
             <Text style={styles.modalLabel}>내용</Text>
-            <TextInput accessibilityLabel="공지 내용" multiline onChangeText={(text) => setNoticeDraft((current) => ({ ...current, content: text }))} placeholder="아이들과 부모님께 전할 내용을 적어 주세요" placeholderTextColor="#96918A" style={[styles.input, styles.textArea]} value={noticeDraft.content} />
+            <TextInput accessibilityLabel="공지 내용" multiline onChangeText={(text) => setNoticeDraft((current) => ({ ...current, content: text }))} placeholder="아이들과 부모님께 하고 싶은 말을 적어 주세요" placeholderTextColor="#96918A" style={[styles.input, styles.textArea]} value={noticeDraft.content} />
 
             <View style={styles.pinToggleRow}>
               <Text style={styles.pinToggleLabel}>📌 고정 공지로 표시</Text>
@@ -285,5 +287,6 @@ export default function TeacherNoticeCalendarManageScreen() {
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
+    </SkyScene>
   );
 }
