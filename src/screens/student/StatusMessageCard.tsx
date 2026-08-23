@@ -1,0 +1,145 @@
+import { useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+
+import GlassCard from '@/components/ui/GlassCard';
+import { BORDER_RADIUS, COLORS, SHADOWS } from '@/constants/theme';
+import { containsUnsafeLanguage } from '@/data/contentSafety';
+import { homeStyles } from './homeStyles';
+
+interface StatusMessageCardProps {
+  message: string;
+  onSave: (message: string) => void;
+  onViewFeed?: () => void;
+}
+
+const MAX_MESSAGE_LENGTH = 40;
+
+/** 학생의 신앙 다짐이나 기도제목을 보여 주고 수정하는 카드입니다. */
+export default function StatusMessageCard({ message, onSave, onViewFeed }: StatusMessageCardProps) {
+  // 모달 표시 여부, 작성 중인 문장, 검수 안내를 각각 간단한 상태로 관리합니다.
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [draft, setDraft] = useState(message);
+  const [guide, setGuide] = useState('');
+
+  const openEditor = () => {
+    setDraft(message);
+    setGuide('');
+    setIsModalVisible(true);
+  };
+
+  const closeEditor = () => setIsModalVisible(false);
+
+  // 저장 버튼을 누르면 Mock AI 검수를 통과한 문장만 화면에 반영합니다.
+  const handleSave = () => {
+    try {
+      const cleanedMessage = draft.trim();
+      if (!cleanedMessage) {
+        setGuide('한 줄 다짐이나 기도제목을 적어 주세요 🕊️');
+        return;
+      }
+      const hasBlockedWord = containsUnsafeLanguage(cleanedMessage);
+      if (hasBlockedWord) {
+        setGuide('예쁜 말로 바꿔볼까요? 🌸');
+        Alert.alert('우리의 말을 예쁘게 가꿔요', '예쁜 말로 바꿔볼까요? 🌸');
+        return;
+      }
+      onSave(cleanedMessage);
+      closeEditor();
+    } catch (error) {
+      console.warn('상태메시지를 검수하는 중 오류가 발생했습니다.', error);
+      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+    }
+  };
+
+  return (
+    <>
+      <GlassCard style={homeStyles.statusCard}>
+        <View style={homeStyles.statusIcon}><Text style={homeStyles.statusIconText}>🕊️</Text></View>
+        <View style={homeStyles.statusContent}>
+          <Text style={homeStyles.statusLabel}>나의 한 줄 다짐</Text>
+          <Text numberOfLines={2} style={homeStyles.statusMessage}>{message}</Text>
+        </View>
+        <Pressable
+          accessibilityLabel="상태메시지 수정"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={openEditor}
+          style={({ pressed }) => [homeStyles.statusEditButton, pressed && styles.pressed]}>
+          <Text style={homeStyles.statusEditIcon}>✏️</Text>
+        </Pressable>
+      </GlassCard>
+
+      {onViewFeed && (
+        <Pressable
+          accessibilityLabel="12명 친구들의 한 줄 다짐 게시판 보기"
+          accessibilityRole="button"
+          onPress={onViewFeed}
+          style={({ pressed }) => [homeStyles.feedLink, pressed && styles.pressed]}>
+          <Text style={homeStyles.feedLinkText}>우리 마을 마음 게시판 보기 🌍</Text>
+        </Pressable>
+      )}
+
+      <Modal animationType="fade" onRequestClose={closeEditor} transparent visible={isModalVisible}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
+          <View accessibilityViewIsModal style={styles.modalCard}>
+            <Text style={styles.modalEmoji}>🌱</Text>
+            <Text style={styles.modalTitle}>오늘의 마음을 들려줘!</Text>
+            <Text style={styles.modalCaption}>신앙 다짐이나 기도제목을 한 줄로 적어 봐요.</Text>
+            <TextInput
+              accessibilityLabel="한 줄 상태메시지 입력"
+              autoFocus
+              maxLength={MAX_MESSAGE_LENGTH}
+              multiline
+              onChangeText={(text) => { setDraft(text); setGuide(''); }}
+              placeholder="예: 오늘도 말씀으로 승리하자!"
+              placeholderTextColor={COLORS.textSecondary}
+              style={styles.input}
+              value={draft}
+            />
+            <View style={styles.inputMeta}>
+              <Text style={styles.guide}>{guide}</Text>
+              <Text style={styles.counter}>{draft.length}/{MAX_MESSAGE_LENGTH}</Text>
+            </View>
+            <View style={styles.buttonRow}>
+              <Pressable onPress={closeEditor} style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}>
+                <Text style={styles.cancelText}>취소</Text>
+              </Pressable>
+              <Pressable onPress={handleSave} style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}>
+                <Text style={styles.saveText}>저장하기</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
+  );
+}
+
+// 카드 본체 스타일은 homeStyles와 GlassCard가 담당하고, 여기서는 수정 모달만 관리합니다.
+const styles = StyleSheet.create({
+  pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
+  modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(41, 42, 45, 0.35)' },
+  modalCard: { ...SHADOWS.soft, width: '100%', maxWidth: 420, alignItems: 'center', padding: 24, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.surfaceOpaque },
+  modalEmoji: { fontSize: 38 },
+  modalTitle: { color: COLORS.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 8 },
+  modalCaption: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 19, fontWeight: '600', textAlign: 'center', marginTop: 6 },
+  input: { width: '100%', minHeight: 88, marginTop: 20, padding: 16, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.surfaceMuted, color: COLORS.textPrimary, fontSize: 16, lineHeight: 23, fontWeight: '700', textAlignVertical: 'top' },
+  inputMeta: { width: '100%', minHeight: 27, flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 7 },
+  guide: { flex: 1, color: COLORS.primary, fontSize: 12, fontWeight: '800' },
+  counter: { color: COLORS.textSecondary, fontSize: 11, fontWeight: '700' },
+  buttonRow: { width: '100%', flexDirection: 'row', gap: 10, marginTop: 10 },
+  cancelButton: { flex: 1, alignItems: 'center', paddingVertical: 15, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.surfaceMuted },
+  cancelText: { color: COLORS.textSecondary, fontSize: 15, fontWeight: '900' },
+  saveButton: { flex: 1.35, alignItems: 'center', paddingVertical: 15, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.primary },
+  saveText: { color: COLORS.textOnPrimary, fontSize: 15, fontWeight: '900' },
+});

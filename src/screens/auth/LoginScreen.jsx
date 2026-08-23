@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { Image } from 'expo-image';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,13 +12,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AnimatedPinFeedback from '@/components/auth/AnimatedPinFeedback';
 import PinKeypad from '@/components/auth/PinKeypad';
+import SkyScene from '@/components/scene/SkyScene';
 import AppButton from '@/components/ui/AppButton';
-import Surface from '@/components/ui/Surface';
+import GlassCard from '@/components/ui/GlassCard';
+import Toast from '@/components/ui/Toast';
 import { COLORS } from '@/constants/theme';
 import { MOCK_LOGIN_PIN, MOCK_STUDENTS } from '@/data/mockStudents';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { fetchStudentNames, loginStudent } from '@/lib/studentAuth';
 import { loginStyles as styles } from './loginStyles';
 
-/** 학생이 앱에서 가장 먼저 만나는 Mock 로그인 화면입니다. */
+/** 학생이 앱에서 가장 먼저 만나는 로그인 화면입니다. */
 export default function LoginScreen({ onLoginSuccess }) {
   // 선택한 학생 ID와 직접 입력할 수 있는 이름을 각각 저장합니다.
   const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -29,6 +31,27 @@ export default function LoginScreen({ onLoginSuccess }) {
   const [pin, setPin] = useState('');
   // 로그인 처리 중 버튼을 여러 번 누르는 것을 막는 상태입니다.
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  // Alert.alert()은 웹에서 아무것도 띄우지 않아, 안내는 화면 안 토스트로 보여 줍니다.
+  const [toast, setToast] = useState(null);
+  const hideToast = useCallback(() => setToast(null), []);
+  // Supabase에 등록된 우리 반 아이들. 아직 연결 전이면 Mock 목록을 그대로 씁니다.
+  const [students, setStudents] = useState(MOCK_STUDENTS);
+
+  useEffect(() => {
+    fetchStudentNames()
+      .then((rows) => {
+        if (rows) setStudents(rows);
+      })
+      .catch((error) => {
+        // Mock 이름을 그대로 두면 실제와 달라 더 헷갈리므로 목록을 비우고,
+        // 이름을 직접 입력해서 로그인할 수 있게 남겨 둡니다.
+        setStudents([]);
+        console.warn(
+          '학생 명단을 불러오지 못했습니다. Supabase 대시보드에서 익명 로그인(Anonymous sign-ins)이 켜져 있는지 확인해 주세요.',
+          error,
+        );
+      });
+  }, []);
 
   const isReady = studentName.trim().length > 0 && pin.length === 4;
 
@@ -46,32 +69,51 @@ export default function LoginScreen({ onLoginSuccess }) {
   // 지우기 버튼은 가장 마지막에 입력한 숫자 한 자리만 삭제합니다.
   const handleDelete = () => setPin((currentPin) => currentPin.slice(0, -1));
 
-  // 현재는 Supabase 대신 0000을 비교하고, 성공하면 부모가 전달한 이동 함수를 실행합니다.
+  // PIN 확인은 서버(claim_student_login)에서만 하고, 앱은 결과만 받습니다.
+  // .env가 아직 비어 있으면 예전처럼 0000으로 확인해 화면 흐름을 볼 수 있게 둡니다.
   const handleLogin = async () => {
     if (!isReady || isLoggingIn) return;
 
     try {
       setIsLoggingIn(true);
-      if (pin !== MOCK_LOGIN_PIN) {
-        Alert.alert('PIN을 다시 확인해요 🔐', '테스트 PIN은 0000이에요. 다시 눌러 볼까요?');
+      const name = studentName.trim();
+
+      if (!isSupabaseConfigured) {
+        if (pin !== MOCK_LOGIN_PIN) {
+          setToast({ message: '연습용 비밀번호는 0000이에요. 다시 눌러 볼까요? 🔐', tone: 'warn' });
+          setPin('');
+          return;
+        }
+        onLoginSuccess({ id: selectedStudentId || 'student-manual', name });
+        return;
+      }
+
+      const student = await loginStudent(name, pin);
+      if (!student) {
+        setToast({
+          message: '비밀번호가 맞지 않아요. 다시 눌러 볼까요? 기억이 안 나면 선생님께 말씀드려요 🔐',
+          tone: 'warn',
+        });
         setPin('');
         return;
       }
-      onLoginSuccess({ id: selectedStudentId || 'student-manual', name: studentName.trim() });
+      onLoginSuccess({ id: student.id, name: student.name });
     } catch (error) {
-      console.warn('Mock 로그인 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+      console.warn('로그인 중 오류가 발생했습니다.', error);
+      setToast({ message: '잠깐 연결이 안 됐어요. 다시 눌러 볼까요? 🌸', tone: 'warn' });
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   return (
+    <SkyScene>
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <Toast message={toast?.message ?? null} onHide={hideToast} tone={toast?.tone} />
           <View style={styles.header}>
             <View style={styles.brandBadge}>
               <Text style={styles.brandBadgeText}>매일 3분, 마음이 쑥쑥</Text>
@@ -80,22 +122,12 @@ export default function LoginScreen({ onLoginSuccess }) {
             <Text style={styles.subtitle}>예수님과 오늘도 함께 걸어가요</Text>
           </View>
 
-          <Image
-            accessibilityLabel="예수님이 두 아이의 손을 잡고 햇살 길을 함께 걷는 그림"
-            contentFit="cover"
-            source={require('@/assets/images/login-hero-jesus.png')}
-            style={styles.heroImage}
-          />
-
-          <Surface style={styles.card}>
+          <GlassCard style={styles.card}>
             <View style={styles.sectionHeader}>
-              <View>
-                <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
-                <Text style={styles.sectionCaption}>내 이름을 고르거나 직접 입력해요</Text>
-              </View>
+              <Text style={styles.sectionTitle}>나는 누구일까요?</Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.studentRow}>
-              {MOCK_STUDENTS.map((student) => (
+              {students.map((student) => (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityState={{ selected: selectedStudentId === student.id }}
@@ -124,14 +156,13 @@ export default function LoginScreen({ onLoginSuccess }) {
             />
 
             <View style={[styles.sectionHeader, styles.pinHeader]}>
-              <View>
-                <Text style={styles.sectionTitle}>비밀 번호 4자리</Text>
-                <Text style={styles.sectionCaption}>숫자를 누르면 별이 하나씩 나타나요</Text>
-              </View>
+              <Text style={styles.sectionTitle}>비밀 번호 4자리</Text>
             </View>
             <AnimatedPinFeedback pinLength={pin.length} />
             <PinKeypad disabled={isLoggingIn} onDelete={handleDelete} onNumberPress={handleNumberPress} />
-            <View style={styles.helperPill}><Text style={styles.helper}>연습용 PIN · 0000</Text></View>
+            {!isSupabaseConfigured && (
+              <View style={styles.helperPill}><Text style={styles.helper}>연습용 PIN · 0000</Text></View>
+            )}
 
             <AppButton
               disabled={!isReady || isLoggingIn}
@@ -140,9 +171,10 @@ export default function LoginScreen({ onLoginSuccess }) {
               style={styles.loginButton}
               trailingText={isLoggingIn ? undefined : '→'}
             />
-          </Surface>
+          </GlassCard>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SkyScene>
   );
 }

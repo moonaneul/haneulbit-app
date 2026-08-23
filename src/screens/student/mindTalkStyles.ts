@@ -1,0 +1,36 @@
+import { StyleSheet } from 'react-native';
+
+import { BORDER_RADIUS, COLORS, Fonts, SHADOWS } from '@/constants/theme';
+
+export const mindTalkStyles = StyleSheet.create({
+  safeArea: { flex: 1 },
+  keyboardView: { flex: 1 },
+  content: { width: '100%', maxWidth: 620, flex: 1, alignSelf: 'center' },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
+  backButton: { alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 9, marginBottom: 16, borderRadius: BORDER_RADIUS.badge, backgroundColor: COLORS.surfaceMuted },
+  backText: { fontFamily: Fonts.sans, color: COLORS.textPrimary, fontSize: 14, fontWeight: '800' },
+  title: { fontFamily: Fonts.display, color: COLORS.textPrimary, fontSize: 25, lineHeight: 34 },
+  statusCard: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 10, paddingHorizontal: 14, paddingVertical: 11, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.accentSoft },
+  statusDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: COLORS.success },
+  statusText: { fontFamily: Fonts.sans, flex: 1, color: COLORS.textPrimary, fontSize: 13, fontWeight: '800' },
+  listContent: { flexGrow: 1, paddingHorizontal: 20, paddingVertical: 8, gap: 16 },
+  messageRow: { width: '100%', alignItems: 'flex-start' },
+  studentRow: { alignItems: 'flex-end' },
+  senderLabel: { fontFamily: Fonts.sans, marginBottom: 6, color: COLORS.textSecondary, fontSize: 12, fontWeight: '800' },
+  bubble: { ...SHADOWS.soft, maxWidth: '84%', padding: 16, borderRadius: BORDER_RADIUS.card, borderTopLeftRadius: 7, backgroundColor: '#FFF8E4' },
+  studentBubble: { borderTopLeftRadius: BORDER_RADIUS.card, borderTopRightRadius: 7, backgroundColor: COLORS.primarySoft },
+  messageText: { fontFamily: Fonts.sans, color: COLORS.textPrimary, fontSize: 16, lineHeight: 24, fontWeight: '700' },
+  timeText: { fontFamily: Fonts.sans, marginTop: 8, color: COLORS.textSecondary, fontSize: 11, fontWeight: '700', textAlign: 'right' },
+  composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderTopWidth: 1, borderTopColor: COLORS.disabled, backgroundColor: COLORS.cardBackground },
+  input: { fontFamily: Fonts.sans, flex: 1, minHeight: 54, maxHeight: 110, paddingHorizontal: 16, paddingVertical: 14, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.surfaceMuted, color: COLORS.textPrimary, fontSize: 15, lineHeight: 21, fontWeight: '700' },
+  sendButton: { minHeight: 54, justifyContent: 'center', paddingHorizontal: 16, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.primary },
+  sendDisabled: { backgroundColor: COLORS.disabled },
+  sendText: { fontFamily: Fonts.sans, color: COLORS.textOnPrimary, fontSize: 14, fontWeight: '900' },
+  pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  modalBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(41,42,45,0.38)' },
+  modalCard: { width: '100%', maxWidth: 390, alignItems: 'center', padding: 26, borderRadius: BORDER_RADIUS.card, backgroundColor: COLORS.surfaceOpaque },
+  modalEmoji: { fontFamily: Fonts.sans, fontSize: 48 },
+  modalTitle: { fontFamily: Fonts.display, marginTop: 10, color: COLORS.textPrimary, fontSize: 21, textAlign: 'center' },
+  modalBody: { fontFamily: Fonts.sans, marginTop: 10, color: COLORS.textSecondary, fontSize: 15, lineHeight: 23, fontWeight: '600', textAlign: 'center' },
+  modalButton: { alignSelf: 'stretch', minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 20, borderRadius: BORDER_RADIUS.button, backgroundColor: COLORS.primary },
+});
