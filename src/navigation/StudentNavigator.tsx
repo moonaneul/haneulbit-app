@@ -17,6 +17,7 @@ import MindTalkScreen from '@/screens/student/MindTalkScreen';
 import MonthlyCalendarScreen from '@/screens/student/MonthlyCalendarScreen';
 import NoticeCalendarScreen from '@/screens/student/NoticeCalendarScreen';
 import QtScreen from '@/screens/student/QtScreen';
+import SettingsScreen from '@/screens/student/SettingsScreen';
 import StatusFeedScreen from '@/screens/student/StatusFeedScreen';
 import WwjdQuizScreen from '@/screens/student/WwjdQuizScreen';
 
@@ -34,6 +35,7 @@ export type StudentStackParamList = {
   NoticeCalendar: undefined;
   MonthlyCalendar: undefined;
   Manito: undefined;
+  Settings: { studentName?: string } | undefined;
 };
 
 const Stack = createStackNavigator<StudentStackParamList>();
@@ -69,10 +71,16 @@ function HomeRoute({ navigation, route }: StackScreenProps<StudentStackParamList
       onManitoPress={() => navigation.navigate('Manito')}
       onMonthlyCalendarPress={() => navigation.navigate('MonthlyCalendar')}
       onNoticeCalendarPress={() => navigation.navigate('NoticeCalendar')}
+      onSettingsPress={() => navigation.navigate('Settings', { studentName: route.params?.studentName })}
       onStatusFeedPress={(myName, myMessage) => navigation.navigate('StatusFeed', { myName, myMessage })}
       studentName={route.params?.studentName}
     />
   );
+}
+
+/** 설정 화면에도 지금 로그인한 아이 이름을 보여 줍니다. */
+function SettingsRoute({ route }: StackScreenProps<StudentStackParamList, 'Settings'>) {
+  return <SettingsScreen studentName={route.params?.studentName} />;
 }
 
 /** Stack 라우트 파라미터를 화면이 기대하는 props 형태로 그대로 전달합니다. */
@@ -119,6 +127,7 @@ export default function StudentNavigator() {
       <Stack.Screen component={StatusFeedRoute} name="StatusFeed" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
       <Stack.Screen component={NoticeCalendarScreen} name="NoticeCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
       <Stack.Screen component={MonthlyCalendarScreen} name="MonthlyCalendar" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
+      <Stack.Screen component={SettingsRoute} name="Settings" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
       <Stack.Screen component={ManitoScreen} name="Manito" options={({ navigation }) => ({ headerLeft: () => <HomeHeaderButton goHome={() => navigation.navigate('Home')} />, title: '' })} />
     </Stack.Navigator>
     </ArmorProvider>

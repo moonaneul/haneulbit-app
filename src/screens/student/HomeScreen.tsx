@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 import GlassCard from '@/components/ui/GlassCard';
+import Toast, { type ToastTone } from '@/components/ui/Toast';
 import { useArmor } from '@/context/ArmorProvider';
 import { STORE_KEYS, loadJson, saveJson } from '@/lib/localStore';
 import { fetchQtSummary, isQtApiReady } from '@/lib/qtApi';
@@ -23,10 +24,11 @@ interface HomeScreenProps {
   onNoticeCalendarPress?: () => void;
   onMonthlyCalendarPress?: () => void;
   onManitoPress?: () => void;
+  onSettingsPress?: () => void;
 }
 
 /** 학생이 로그인한 뒤 처음 만나는 메인 마이페이지 화면입니다. */
-export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress, onMonthlyCalendarPress, onManitoPress }: HomeScreenProps) {
+export default function HomeScreen({ studentName, onMissionPress, onArmorShopPress, onStatusFeedPress, onNoticeCalendarPress, onMonthlyCalendarPress, onManitoPress, onSettingsPress }: HomeScreenProps) {
   // 달란트는 상점과 같은 값을 봐야 해서 ArmorProvider에서 가져옵니다.
   const { talents } = useArmor();
   // 로그인에서 받은 이름이 있으면 Mock 기본 이름 대신 사용합니다.
@@ -36,6 +38,8 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   const [statusMessage, setStatusMessage] = useState(DEFAULT_STATUS_MESSAGE);
   // 연속 출석은 QT 완료 기록에서 계산돼 서버가 알려 줍니다.
   const [streakDays, setStreakDays] = useState(MOCK_STUDENT.streakDays);
+  const [toast, setToast] = useState<{ message: string; tone: ToastTone } | null>(null);
+  const hideToast = useCallback(() => setToast(null), []);
 
   useEffect(() => {
     if (!isQtApiReady) return;
@@ -72,6 +76,7 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
   const handleNoticeCalendarPress = () => openOrNotice(onNoticeCalendarPress, '알림장 & 캘린더', '알림장 & 캘린더로 이동하는 중 오류가 발생했습니다.');
   const handleMonthlyCalendarPress = () => openOrNotice(onMonthlyCalendarPress, '만나 스티커 달력', '만나 스티커 달력으로 이동하는 중 오류가 발생했습니다.');
   const handleManitoPress = () => openOrNotice(onManitoPress, '비밀 마니또', '비밀 마니또로 이동하는 중 오류가 발생했습니다.');
+  const handleSettingsPress = () => openOrNotice(onSettingsPress, '설정', '설정 화면으로 이동하는 중 오류가 발생했습니다.');
   const handleStatusFeedPress = () =>
     openOrNotice(
       onStatusFeedPress && (() => onStatusFeedPress(student.name, statusMessage)),
@@ -99,6 +104,7 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
       <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
+            <Toast message={toast?.message ?? null} onHide={hideToast} tone={toast?.tone} />
             <GlassCard style={styles.header}>
               <View style={styles.headerAvatar}>
                 <Text style={styles.headerAvatarText}>{student.name[0]}</Text>
@@ -171,9 +177,25 @@ export default function HomeScreen({ studentName, onMissionPress, onArmorShopPre
                 <Text style={styles.noticeBannerArrow}>›</Text>
               </GlassCard>
             </Pressable>
+
+            <Pressable
+              accessibilityLabel="설정, 비밀번호와 알림 정하기"
+              accessibilityRole="button"
+              onPress={handleSettingsPress}
+              style={({ pressed }) => [pressed && styles.noticeBannerPressed]}>
+              <GlassCard style={styles.noticeBanner}>
+                <Text style={styles.noticeBannerEmoji}>⚙️</Text>
+                <View style={styles.noticeBannerCopy}>
+                  <Text style={styles.noticeBannerTitle}>설정</Text>
+                  <Text style={styles.noticeBannerDescription}>비밀번호와 알림을 정할 수 있어</Text>
+                </View>
+                <Text style={styles.noticeBannerArrow}>›</Text>
+              </GlassCard>
+            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
+
     </SkyScene>
   );
 }

@@ -11,7 +11,6 @@ import {
   MOCK_MONTHLY_STICKERS,
   WEEKDAY_LABELS,
 } from './monthlyCalendarData';
-import QtReminderCard from './QtReminderCard';
 import { monthlyCalendarStyles as styles } from './monthlyCalendarStyles';
 
 /** 매일 미션을 완료하면 만나 스티커가 쌓이는 월간 달력 화면입니다. */
@@ -100,8 +99,6 @@ export default function MonthlyCalendarScreen() {
               </View>
             </View>
           </View>
-
-          <QtReminderCard />
         </View>
       </ScrollView>
     </SafeAreaView>

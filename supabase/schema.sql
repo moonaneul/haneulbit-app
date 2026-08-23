@@ -176,6 +176,46 @@ grant execute on function list_student_names() to authenticated;
 -- 예전 버전은 void를 돌려줬습니다. create or replace로는 반환 타입을 바꿀 수 없어서 먼저 지웁니다.
 drop function if exists add_talent_points(uuid, int, text);
 
+-- 지금 비밀번호가 맞는지만 확인합니다.
+-- 비밀번호 바꾸기 첫 단계에서 바로 알려 주려고 따로 뒀습니다.
+-- (마지막에 가서야 틀렸다고 하면 아이가 새 번호를 두 번 입력한 뒤에 되돌아가야 합니다)
+create or replace function verify_my_pin(p_pin text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, extensions
+as $$
+  select coalesce((
+    select pin_hash = crypt(p_pin, pin_hash)
+    from students where id = current_student_id()
+  ), false);
+$$;
+
+-- 아이가 자기 비밀번호를 스스로 바꿉니다.
+-- 지금 PIN을 맞게 눌러야만 바꿀 수 있고, 확인과 저장 모두 서버에서만 일어납니다.
+create or replace function change_my_pin(p_current text, p_new text)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := current_student_id();
+  is_current_ok boolean;
+begin
+  if me is null then raise exception '로그인이 필요해요'; end if;
+  if p_new is null or p_new !~ '^[0-9]{4}$' then raise exception 'INVALID_PIN'; end if;
+
+  select pin_hash = crypt(p_current, pin_hash) into is_current_ok
+  from students where id = me;
+
+  if not coalesce(is_current_ok, false) then raise exception 'WRONG_CURRENT'; end if;
+
+  update students set pin_hash = crypt(p_new, gen_salt('bf')) where id = me;
+end;
+$$;
+
 -- 달란트는 항상 이 함수로만 더하고 빼서, talent_transactions에 사용 내역이 남도록 합니다.
 -- security definer라 RLS를 지나치므로, 누가 부를 수 있는지 함수 안에서 직접 확인합니다.
 create or replace function add_talent_points(target_student_id uuid, delta int, reason text)

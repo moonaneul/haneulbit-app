@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import PinKeypad from '@/components/auth/PinKeypad';
 import SkyScene from '@/components/scene/SkyScene';
 import AppButton from '@/components/ui/AppButton';
 import GlassCard from '@/components/ui/GlassCard';
+import Toast from '@/components/ui/Toast';
 import { COLORS } from '@/constants/theme';
 import { MOCK_LOGIN_PIN, MOCK_STUDENTS } from '@/data/mockStudents';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -31,6 +31,9 @@ export default function LoginScreen({ onLoginSuccess }) {
   const [pin, setPin] = useState('');
   // 로그인 처리 중 버튼을 여러 번 누르는 것을 막는 상태입니다.
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  // Alert.alert()은 웹에서 아무것도 띄우지 않아, 안내는 화면 안 토스트로 보여 줍니다.
+  const [toast, setToast] = useState(null);
+  const hideToast = useCallback(() => setToast(null), []);
   // Supabase에 등록된 우리 반 아이들. 아직 연결 전이면 Mock 목록을 그대로 씁니다.
   const [students, setStudents] = useState(MOCK_STUDENTS);
 
@@ -77,7 +80,7 @@ export default function LoginScreen({ onLoginSuccess }) {
 
       if (!isSupabaseConfigured) {
         if (pin !== MOCK_LOGIN_PIN) {
-          Alert.alert('PIN을 다시 확인해요 🔐', '연습용 PIN은 0000이에요. 다시 눌러 볼까요?');
+          setToast({ message: '연습용 비밀번호는 0000이에요. 다시 눌러 볼까요? 🔐', tone: 'warn' });
           setPin('');
           return;
         }
@@ -87,14 +90,17 @@ export default function LoginScreen({ onLoginSuccess }) {
 
       const student = await loginStudent(name, pin);
       if (!student) {
-        Alert.alert('앗, 다시 한 번 볼까요? 🔐', '이름이나 비밀번호가 맞지 않아요.');
+        setToast({
+          message: '비밀번호가 맞지 않아요. 다시 눌러 볼까요? 기억이 안 나면 선생님께 말씀드려요 🔐',
+          tone: 'warn',
+        });
         setPin('');
         return;
       }
       onLoginSuccess({ id: student.id, name: student.name });
     } catch (error) {
       console.warn('로그인 중 오류가 발생했습니다.', error);
-      Alert.alert('앗, 잠시 쉬어 갈까요?', '잠시 후 다시 시도해 주세요 🌸');
+      setToast({ message: '잠깐 연결이 안 됐어요. 다시 눌러 볼까요? 🌸', tone: 'warn' });
     } finally {
       setIsLoggingIn(false);
     }
@@ -107,6 +113,7 @@ export default function LoginScreen({ onLoginSuccess }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <Toast message={toast?.message ?? null} onHide={hideToast} tone={toast?.tone} />
           <View style={styles.header}>
             <View style={styles.brandBadge}>
               <Text style={styles.brandBadgeText}>매일 3분, 마음이 쑥쑥</Text>

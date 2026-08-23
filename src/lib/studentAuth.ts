@@ -62,3 +62,27 @@ export async function loginStudent(name: string, pin: string): Promise<StudentPr
 
   return { id: data.id, name: data.name, avatarEmoji: data.avatar_emoji };
 }
+
+/** 지금 비밀번호가 맞는지 확인합니다. 첫 단계에서 바로 알려 주기 위해 씁니다. */
+export async function verifyMyPin(pin: string) {
+  const { data, error } = await supabase.rpc('verify_my_pin', { p_pin: pin });
+  if (error) throw error;
+  return data === true;
+}
+
+export type PinChangeFailure = 'WRONG_CURRENT' | 'INVALID_PIN' | 'UNKNOWN';
+
+/** 아이가 자기 비밀번호를 바꿉니다. 확인과 저장은 서버에서만 일어납니다. */
+export async function changeMyPin(currentPin: string, newPin: string) {
+  const { error } = await supabase.rpc('change_my_pin', {
+    p_current: currentPin,
+    p_new: newPin,
+  });
+  if (!error) return { ok: true as const };
+
+  const known: PinChangeFailure[] = ['WRONG_CURRENT', 'INVALID_PIN'];
+  return {
+    ok: false as const,
+    reason: known.find((code) => error.message?.includes(code)) ?? ('UNKNOWN' as PinChangeFailure),
+  };
+}
