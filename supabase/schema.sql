@@ -311,7 +311,45 @@ begin
 end;
 $$;
 
--- 연속 출석 일수와 이번 달 완료 날짜를 함께 돌려줍니다.
+-- 한 아이의 연속 출석 일수입니다.
+-- 선생님 대시보드도 같은 규칙을 써야 해서 학생 단위 함수로 빼 두었습니다.
+create or replace function qt_streak_for(p_student uuid)
+returns int
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  cursor_date date;
+  streak int := 0;
+begin
+  if p_student is null then return 0; end if;
+
+  -- 오늘 아직 안 했더라도 어제까지의 연속 기록은 살려 둡니다.
+  cursor_date := current_date;
+  if not exists (
+    select 1 from qt_completions where student_id = p_student and completed_at::date = cursor_date
+  ) then
+    cursor_date := cursor_date - 1;
+  end if;
+
+  -- 주말은 QT가 없으므로 건너뛰고, 주중에 빠진 날이 나오면 거기서 멈춥니다.
+  while cursor_date > current_date - 400 loop
+    if extract(isodow from cursor_date) <= 5 then
+      exit when not exists (
+        select 1 from qt_completions where student_id = p_student and completed_at::date = cursor_date
+      );
+      streak := streak + 1;
+    end if;
+    cursor_date := cursor_date - 1;
+  end loop;
+
+  return streak;
+end;
+$$;
+
+-- 내 연속 출석과 이번 달 완료 날짜입니다.
 -- 스티커 달력은 별도 표 없이 이 완료 기록을 날짜별로 세서 그립니다.
 create or replace function get_my_qt_summary(p_month date default null)
 returns jsonb
@@ -323,34 +361,9 @@ as $$
 declare
   me uuid := current_student_id();
   target_month date := coalesce(p_month, date_trunc('month', current_date)::date);
-  cursor_date date;
-  streak int := 0;
 begin
-  if me is null then
-    return jsonb_build_object('streakDays', 0, 'completedDates', '[]'::jsonb);
-  end if;
-
-  -- 오늘 아직 안 했더라도 어제까지의 연속 기록은 살려 둡니다.
-  cursor_date := current_date;
-  if not exists (
-    select 1 from qt_completions where student_id = me and completed_at::date = cursor_date
-  ) then
-    cursor_date := cursor_date - 1;
-  end if;
-
-  -- 주말은 QT가 없으므로 건너뛰고, 주중에 빠진 날이 나오면 거기서 멈춥니다.
-  while cursor_date > current_date - 400 loop
-    if extract(isodow from cursor_date) <= 5 then
-      exit when not exists (
-        select 1 from qt_completions where student_id = me and completed_at::date = cursor_date
-      );
-      streak := streak + 1;
-    end if;
-    cursor_date := cursor_date - 1;
-  end loop;
-
   return jsonb_build_object(
-    'streakDays', streak,
+    'streakDays', qt_streak_for(me),
     'completedDates', coalesce((
       select jsonb_agg(distinct to_char(completed_at::date, 'YYYY-MM-DD'))
       from qt_completions
@@ -454,6 +467,99 @@ create table if not exists wwjd_quiz_attempts (
   completed_at timestamptz not null default now(),
   unique (student_id, quiz_id)
 );
+
+-- =========================================================
+-- 4-1. 선생님 대시보드
+-- =========================================================
+
+-- 새 학생 계정을 만듭니다. 초기 PIN은 명세대로 0000입니다.
+-- PIN 해시는 서버에서만 만들 수 있으므로 앱이 직접 insert하지 않고 이 함수를 씁니다.
+create or replace function create_student(p_name text, p_avatar text default '🧒')
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  new_student students;
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+  if p_name is null or length(trim(p_name)) = 0 then raise exception 'EMPTY_NAME'; end if;
+
+  -- 이름으로 로그인하므로 같은 이름이 두 명 있으면 안 됩니다.
+  if exists (select 1 from students where name = trim(p_name)) then
+    raise exception 'DUPLICATE_NAME';
+  end if;
+
+  insert into students (name, avatar_emoji, pin_hash, created_by)
+  values (trim(p_name), coalesce(p_avatar, '🧒'), crypt('0000', gen_salt('bf')), auth.uid())
+  returning * into new_student;
+
+  return jsonb_build_object(
+    'id', new_student.id,
+    'name', new_student.name,
+    'avatar', new_student.avatar_emoji,
+    'createdAt', new_student.created_at
+  );
+end;
+$$;
+
+-- 아이가 PIN을 잊었을 때 0000으로 되돌립니다.
+create or replace function reset_student_pin(p_student uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+
+  update students set pin_hash = crypt('0000', gen_salt('bf')) where id = p_student;
+  if not found then raise exception 'NOT_FOUND'; end if;
+end;
+$$;
+
+-- 우리 반 12명의 오늘 현황을 한 번에 돌려줍니다.
+-- 아이마다 따로 조회하면 12번 오가야 해서 한 덩어리로 만듭니다.
+create or replace function get_teacher_dashboard()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  today_template uuid;
+  this_week_quiz uuid;
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+
+  select id into today_template from qt_template_for(current_date);
+  select id into this_week_quiz from wwjd_quizzes
+   where week_start_date = date_trunc('week', current_date)::date limit 1;
+
+  return coalesce((
+    select jsonb_agg(
+      jsonb_build_object(
+        'id', s.id,
+        'name', s.name,
+        'avatar', s.avatar_emoji,
+        'talentPoints', s.talent_points,
+        'streakDays', qt_streak_for(s.id),
+        'didQt', exists (
+          select 1 from qt_completions c
+          where c.student_id = s.id and c.template_id = today_template
+        ),
+        'didQuiz', exists (
+          select 1 from wwjd_quiz_attempts a
+          where a.student_id = s.id and a.quiz_id = this_week_quiz
+        )
+      ) order by s.name
+    )
+    from students s
+  ), '[]'::jsonb);
+end;
+$$;
 
 -- =========================================================
 -- 5. 감사 보물상자 & 추천 영상

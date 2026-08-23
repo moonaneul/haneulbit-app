@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
+
+import { fetchTeacherDashboard, isTeacherApiReady } from '@/lib/teacherApi';
 
 import {
   MOCK_STUDENT_STATUSES,
@@ -20,12 +22,24 @@ interface TeacherHomeScreenProps {
 export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: TeacherHomeScreenProps) {
   // 선택한 미참여 학생의 카드 안에 독려 알림 버튼을 펼치기 위한 상태입니다.
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-
-  // 학생 데이터가 바뀌어도 오늘 QT 참여 인원이 자동으로 다시 계산됩니다.
-  const qtCount = useMemo(
-    () => MOCK_STUDENT_STATUSES.filter((student) => student.didQt).length,
-    [],
+  // 아이들 현황은 서버에서 옵니다. 연결 전에는 Mock으로 화면만 확인합니다.
+  const [students, setStudents] = useState<TeacherStudentStatus[]>(
+    isTeacherApiReady ? [] : MOCK_STUDENT_STATUSES,
   );
+
+  useEffect(() => {
+    if (!isTeacherApiReady) return;
+    fetchTeacherDashboard()
+      .then(setStudents)
+      .catch((error) => console.warn('아이들 현황을 불러오지 못했습니다.', error));
+  }, []);
+
+  const qtCount = useMemo(
+    () => students.filter((student) => student.didQt).length,
+    [students],
+  );
+  // 반 인원이 12명이 아닐 수도 있으므로 실제 등록된 수를 씁니다.
+  const totalCount = students.length;
 
   /** 아직 QT 또는 퀴즈를 완료하지 않은 학생 카드만 독려 대상으로 선택합니다. */
   const handleStudentPress = (student: TeacherStudentStatus) => {
@@ -65,9 +79,9 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
             <Text style={styles.eyebrow}>TEACHER ADMIN</Text>
             <Text style={styles.title}>하늘빛기쁨 초등부{`\n`}관리자 대시보드 ✝️</Text>
             <View style={styles.participationRow}>
-              <Text style={styles.participationText}>오늘 큐티 참여: {qtCount}/12명 🌸</Text>
+              <Text style={styles.participationText}>오늘 큐티 참여: {qtCount}/{totalCount}명 🌸</Text>
               <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${(qtCount / 12) * 100}%` }]} />
+                <View style={[styles.progressFill, { width: `${totalCount > 0 ? (qtCount / totalCount) * 100 : 0}%` }]} />
               </View>
             </View>
           </View>
@@ -98,7 +112,7 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
             <Text style={styles.sectionCaption}>미완료 카드를 누르면 바로 따뜻한 독려 알림을 보낼 수 있어요.</Text>
           </View>
           <View style={styles.studentList}>
-            {MOCK_STUDENT_STATUSES.map((student) => {
+            {students.map((student) => {
               const isSelected = selectedStudentId === student.id;
               const isComplete = student.didQt && student.didQuiz;
               return (
