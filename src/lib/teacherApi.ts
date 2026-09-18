@@ -85,3 +85,48 @@ export async function resetStudentPin(studentId: string) {
   const { error } = await supabase.rpc('reset_student_pin', { p_student: studentId });
   return !error;
 }
+
+
+export type QtWeekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri';
+
+export interface TeacherQtTemplate {
+  id: string;
+  weekday: QtWeekday;
+  reference: string;
+  verse: string;
+  teacherMessage: string;
+  audioUrl: string | null;
+  isVoiceGenerated: boolean;
+  isPublished: boolean;
+}
+
+export async function fetchTeacherWeeklyQt(): Promise<TeacherQtTemplate[]> {
+  const { data, error } = await supabase.rpc('get_teacher_weekly_qt');
+  if (error) throw new Error(error.message.includes('NOT_TEACHER') ? 'NOT_TEACHER' : 'UNKNOWN');
+  return (data ?? []) as TeacherQtTemplate[];
+}
+
+export async function saveTeacherQtTemplate(
+  weekday: QtWeekday,
+  draft: Pick<TeacherQtTemplate, 'reference' | 'verse' | 'teacherMessage'>,
+): Promise<TeacherQtTemplate> {
+  const { data, error } = await supabase.rpc('save_teacher_qt_template', {
+    p_weekday: weekday,
+    p_reference: draft.reference,
+    p_verse: draft.verse,
+    p_teacher_message: draft.teacherMessage,
+  });
+  if (error) throw new Error(error.message.includes('NOT_TEACHER') ? 'NOT_TEACHER' : 'UNKNOWN');
+  return data as TeacherQtTemplate;
+}
+
+export async function publishTeacherQtTemplate(weekday: QtWeekday): Promise<TeacherQtTemplate> {
+  const { data, error } = await supabase.rpc('publish_teacher_qt_template', { p_weekday: weekday });
+  if (error) {
+    if (error.message.includes('INCOMPLETE_QT')) throw new Error('INCOMPLETE_QT');
+    if (error.message.includes('QT_DRAFT_NOT_FOUND')) throw new Error('QT_DRAFT_NOT_FOUND');
+    if (error.message.includes('NOT_TEACHER')) throw new Error('NOT_TEACHER');
+    throw new Error('UNKNOWN');
+  }
+  return data as TeacherQtTemplate;
+}

@@ -36,5 +36,3 @@ export const fetchArmorState = () => call('get_my_armor_state');
 export const buyArmorOnServer = (armorId: string) => call('buy_armor', { p_armor_id: armorId });
 export const upgradeArmorOnServer = (armorId: string) => call('upgrade_armor', { p_armor_id: armorId });
 export const toggleEquipOnServer = (armorId: string) => call('toggle_equip_armor', { p_armor_id: armorId });
-export const earnTalentsOnServer = (amount: number, reason: string) =>
-  call('earn_talents', { p_amount: amount, p_reason: reason });
