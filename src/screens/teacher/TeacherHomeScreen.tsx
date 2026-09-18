@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 
@@ -26,13 +26,26 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
   const [students, setStudents] = useState<TeacherStudentStatus[]>(
     isTeacherApiReady ? [] : MOCK_STUDENT_STATUSES,
   );
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const loadDashboard = useCallback(async () => {
+    if (!isTeacherApiReady) return;
+    try {
+      setStudents(await fetchTeacherDashboard());
+    } catch (error) {
+      console.warn('아이들 현황을 불러오지 못했습니다.', error);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!isTeacherApiReady) return;
-    fetchTeacherDashboard()
-      .then(setStudents)
-      .catch((error) => console.warn('아이들 현황을 불러오지 못했습니다.', error));
-  }, []);
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadDashboard();
+    setIsRefreshing(false);
+  }, [loadDashboard]);
 
   const qtCount = useMemo(
     () => students.filter((student) => student.didQt).length,
@@ -73,7 +86,10 @@ export default function TeacherHomeScreen({ onShortcutPress, onSendNudge }: Teac
   return (
     <SkyScene>
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={isTeacherApiReady ? <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} /> : undefined}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.summaryCard}>
             <Text style={styles.eyebrow}>TEACHER ADMIN</Text>
