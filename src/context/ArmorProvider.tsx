@@ -3,7 +3,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { ITEM_TO_SLOT, type EquippedArmor } from '@/components/character/characterParts';
 import {
   buyArmorOnServer,
-  earnTalentsOnServer,
   fetchArmorState,
   isArmorApiReady,
   toggleEquipOnServer,
@@ -119,12 +118,11 @@ export function ArmorProvider({ children, initialTalents = 150 }: ArmorProviderP
       setTalents((current) => current + amount);
       return;
     }
-    try {
-      applyServerState(await earnTalentsOnServer(amount, reason));
-    } catch (error) {
-      console.warn('달란트를 적립하지 못했습니다.', error);
-    }
-  }, [applyServerState]);
+
+    // 실제 서비스에서는 활동 전용 완료 RPC만 보상을 지급합니다.
+    // WWJD/감사 등 미연동 기능이 클라이언트 주장만으로 서버 달란트를 올리지 못하게 막습니다.
+    console.warn('서버 달란트 보상은 활동 전용 완료 RPC에서만 지급합니다.', { amount, reason });
+  }, []);
 
   const buy = useCallback(async (item: ArmorItem): Promise<BuyResult> => {
     if (!isArmorApiReady) {
