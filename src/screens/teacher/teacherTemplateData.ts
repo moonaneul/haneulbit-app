@@ -17,6 +17,14 @@ export interface DailyTemplateDraft {
   isPublished: boolean;
 }
 
+export const EMPTY_WEEKLY_TEMPLATE: Record<Weekday, DailyTemplateDraft> = {
+  mon: { reference: '', verse: '', teacherMessage: '', isVoiceGenerated: false, isPublished: false },
+  tue: { reference: '', verse: '', teacherMessage: '', isVoiceGenerated: false, isPublished: false },
+  wed: { reference: '', verse: '', teacherMessage: '', isVoiceGenerated: false, isPublished: false },
+  thu: { reference: '', verse: '', teacherMessage: '', isVoiceGenerated: false, isPublished: false },
+  fri: { reference: '', verse: '', teacherMessage: '', isVoiceGenerated: false, isPublished: false },
+};
+
 /** Supabase 연동 전, 이번 주 등록 현황을 보여 주기 위한 Mock 초기값입니다. */
 export const MOCK_WEEKLY_TEMPLATE: Record<Weekday, DailyTemplateDraft> = {
   mon: {
