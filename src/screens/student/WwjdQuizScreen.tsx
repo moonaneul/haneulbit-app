@@ -3,6 +3,7 @@ import { Animated, Modal, Pressable, ScrollView, Text, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 import { useArmor } from '@/context/ArmorProvider';
+import { isArmorApiReady } from '@/lib/armorApi';
 
 import { TODAY_WWJD_QUIZ, type QuizChoice } from './wwjdQuizData';
 import { wwjdQuizStyles as styles } from './wwjdQuizStyles';
@@ -51,7 +52,7 @@ export default function WwjdQuizScreen({ onBack }: WwjdQuizScreenProps) {
         return;
       }
 
-      earn(20, 'WWJD 퀴즈 완료'); // 1·2단계 각 10달란트
+      if (!isArmorApiReady) earn(20, 'WWJD 퀴즈 완료');
       setIsRewardVisible(true);
       Animated.spring(rewardScale, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start();
     } catch (error) {
@@ -101,7 +102,7 @@ export default function WwjdQuizScreen({ onBack }: WwjdQuizScreenProps) {
             </View>
           </View>
 
-          {isLocked && <View style={styles.reward}><Text style={styles.rewardText}>+10 달란트 🪙</Text></View>}
+          {isLocked && <View style={styles.reward}><Text style={styles.rewardText}>{isArmorApiReady ? '정답이에요! 다음 단계로 이동해요 🌱' : '+10 달란트 🪙'}</Text></View>}
           {!!hint && <View accessibilityLiveRegion="polite" style={styles.hint}><Text style={styles.hintText}>{hint}</Text></View>}
         </View>
       </ScrollView>
@@ -110,7 +111,7 @@ export default function WwjdQuizScreen({ onBack }: WwjdQuizScreenProps) {
         <View style={styles.modalBackdrop}>
           <Animated.View style={[styles.modalCard, { transform: [{ scale: rewardScale }] }]}>
             <Text style={styles.shield}>{TODAY_WWJD_QUIZ.completion.emoji}</Text>
-            <Text style={styles.modalTitle}>{TODAY_WWJD_QUIZ.completion.title}</Text>
+            <Text style={styles.modalTitle}>{isArmorApiReady ? '정답이에요! 🎉' : TODAY_WWJD_QUIZ.completion.title}</Text>
             <Text style={styles.modalBody}>{TODAY_WWJD_QUIZ.completion.message}</Text>
             <Pressable accessibilityRole="button" onPress={onBack ?? (() => setIsRewardVisible(false))} style={({ pressed }) => [styles.completeButton, pressed && styles.pressed]}>
               <Text style={styles.completeText}>완료하고 돌아가기</Text>
