@@ -3,6 +3,7 @@ import { Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, Scrol
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyScene from '@/components/scene/SkyScene';
 import { useArmor } from '@/context/ArmorProvider';
+import { isArmorApiReady } from '@/lib/armorApi';
 
 import {
   containsUnsafeLanguage,
@@ -66,8 +67,12 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
         setIsSafetyModalVisible(true);
         return;
       }
-      earn(10, '감사 보물상자 기록');
-      Alert.alert('보물상자에 쏙! 🎁', '감사 기록을 저장하고 +10 달란트를 받았어요 🪙');
+      if (!isArmorApiReady) {
+        earn(10, '감사 보물상자 기록');
+        Alert.alert('보물상자에 쏙! 🎁', 'Mock 모드에서 +10 달란트를 받았어요 🪙');
+      } else {
+        Alert.alert('감사 기능은 아직 연결 중이에요', '실제 게시물 저장과 보상은 활동 전용 서버 RPC를 연결한 뒤 활성화됩니다.');
+      }
       setTitle('');
     } catch (error) {
       console.warn('감사 기록을 저장하는 중 오류가 발생했습니다.', error);
@@ -141,7 +146,7 @@ export default function GratitudeScreen({ onBack }: GratitudeScreenProps) {
                   <Text style={styles.sectionTitle}>무엇이 감사했나요?</Text>
                   <TextInput accessibilityLabel="한 줄 감사 제목" maxLength={80} onChangeText={setTitle} onSubmitEditing={handleSave} placeholder="오늘 맛있는 점심을 먹어서 감사해요! 🍕" placeholderTextColor="#96918A" returnKeyType="done" style={styles.input} value={title} />
                   <Text style={styles.safeHint}>🌸 친구의 마음도 기뻐지는 예쁜 말로 적어 보아요. {title.length}/80</Text>
-                  <Pressable accessibilityRole="button" disabled={!canSave} onPress={handleSave} style={({ pressed }) => [styles.saveButton, !canSave && styles.saveDisabled, pressed && styles.pressed]}><Text style={styles.saveText}>보물상자에 저장하기 (+10 달란트 🪙)</Text></Pressable>
+                  <Pressable accessibilityRole="button" disabled={!canSave} onPress={handleSave} style={({ pressed }) => [styles.saveButton, !canSave && styles.saveDisabled, pressed && styles.pressed]}><Text style={styles.saveText}>보물상자에 저장하기</Text></Pressable>
                 </View>
 
                 <View style={styles.feedHeader}><Text style={styles.sectionTitle}>친구들의 감사 보물 ✨</Text><Text style={styles.sectionGuide}>따뜻한 응원 스티커를 선물해 보아요.</Text></View>
