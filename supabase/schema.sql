@@ -30,7 +30,18 @@ begin
   new.updated_at = now();
   return new;
 end;
-$$;
+$;
+
+-- 서비스의 "오늘"은 교회가 있는 한국 시간 기준으로 계산합니다.
+-- Supabase DB 세션 시간대가 UTC여도 QT 날짜가 자정 전후에 어긋나지 않게 합니다.
+create or replace function haneulbit_today()
+returns date
+language sql
+stable
+set search_path = public, extensions
+as $
+  select (now() at time zone 'Asia/Seoul')::date;
+$;
 
 -- =========================================================
 -- 1. 계정 (역할별로 완전히 분리된 테이블)
@@ -128,32 +139,45 @@ $$;
 -- =========================================================
 
 -- 이름+PIN이 맞으면 익명 인증된 현재 세션(auth.uid())을 그 학생 행에 연결합니다.
--- 클라이언트는 이 함수만 호출하면 되고, pin_hash는 절대 클라이언트로 내려가지 않습니다.
-create or replace function claim_student_login(student_name text, pin text)
-returns students
+-- 반환값은 화면에 필요한 공개 필드만 포함하며 pin_hash는 RPC 결과에 절대 포함하지 않습니다.
+-- 반환 타입을 students -> table 로 바꾸므로 기존 함수는 먼저 삭제합니다.
+drop function if exists claim_student_login(text, text);
+create function claim_student_login(student_name text, pin text)
+returns table (id uuid, name text, avatar_emoji text)
 language plpgsql
 security definer
 set search_path = public, extensions
-as $$
+as $
 declare
-  matched students;
+  matched_id uuid;
 begin
-  select * into matched
-  from students
-  where name = student_name
-    and pin_hash = crypt(pin, pin_hash)
+  if auth.uid() is null then
+    raise exception '로그인이 필요해요';
+  end if;
+
+  select s.id into matched_id
+  from students s
+  where s.name = student_name
+    and s.pin_hash = crypt(pin, s.pin_hash)
   limit 1;
 
-  if matched.id is null then
+  if matched_id is null then
     raise exception '이름 또는 PIN이 올바르지 않아요';
   end if;
 
-  update students set auth_user_id = auth.uid() where id = matched.id
-  returning * into matched;
+  update students
+  set auth_user_id = auth.uid()
+  where students.id = matched_id;
 
-  return matched;
+  return query
+  select s.id, s.name, s.avatar_emoji
+  from students s
+  where s.id = matched_id;
 end;
-$$;
+$;
+
+revoke execute on function claim_student_login(text, text) from public, anon;
+grant execute on function claim_student_login(text, text) to authenticated;
 
 -- 로그인 화면에 보여 줄 아이들 목록입니다.
 -- students 표는 RLS 때문에 로그인 전에는 읽을 수 없어서, 이 함수로만 꺼내 씁니다.
@@ -324,11 +348,11 @@ declare
   found_template weekly_qt_templates;
   my_reflection text;
 begin
-  if extract(isodow from current_date) > 5 then
+  if extract(isodow from haneulbit_today()) > 5 then
     return jsonb_build_object('isRestDay', true, 'template', null);
   end if;
 
-  found_template := qt_template_for(current_date);
+  found_template := qt_template_for(haneulbit_today());
   if found_template.id is null then
     return jsonb_build_object('isRestDay', false, 'template', null);
   end if;
@@ -367,18 +391,18 @@ begin
   if p_student is null then return 0; end if;
 
   -- 오늘 아직 안 했더라도 어제까지의 연속 기록은 살려 둡니다.
-  cursor_date := current_date;
+  cursor_date := haneulbit_today();
   if not exists (
-    select 1 from qt_completions where student_id = p_student and completed_at::date = cursor_date
+    select 1 from qt_completions where student_id = p_student and (completed_at at time zone 'Asia/Seoul')::date = cursor_date
   ) then
     cursor_date := cursor_date - 1;
   end if;
 
   -- 주말은 QT가 없으므로 건너뛰고, 주중에 빠진 날이 나오면 거기서 멈춥니다.
-  while cursor_date > current_date - 400 loop
+  while cursor_date > haneulbit_today() - 400 loop
     if extract(isodow from cursor_date) <= 5 then
       exit when not exists (
-        select 1 from qt_completions where student_id = p_student and completed_at::date = cursor_date
+        select 1 from qt_completions where student_id = p_student and (completed_at at time zone 'Asia/Seoul')::date = cursor_date
       );
       streak := streak + 1;
     end if;
@@ -400,15 +424,15 @@ set search_path = public, extensions
 as $$
 declare
   me uuid := current_student_id();
-  target_month date := coalesce(p_month, date_trunc('month', current_date)::date);
+  target_month date := coalesce(p_month, date_trunc('month', haneulbit_today())::date);
 begin
   return jsonb_build_object(
     'streakDays', qt_streak_for(me),
     'completedDates', coalesce((
-      select jsonb_agg(distinct to_char(completed_at::date, 'YYYY-MM-DD'))
+      select jsonb_agg(distinct to_char((completed_at at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD'))
       from qt_completions
       where student_id = me
-        and date_trunc('month', completed_at) = date_trunc('month', target_month)
+        and date_trunc('month', completed_at at time zone 'Asia/Seoul') = date_trunc('month', target_month)
     ), '[]'::jsonb)
   );
 end;
@@ -432,7 +456,7 @@ begin
   if me is null then raise exception '로그인이 필요해요'; end if;
   if p_reflection is null or length(trim(p_reflection)) = 0 then raise exception 'EMPTY_REFLECTION'; end if;
 
-  select id into today_template from qt_template_for(current_date);
+  select id into today_template from qt_template_for(haneulbit_today());
   if today_template is null then raise exception 'NO_QT_TODAY'; end if;
 
   if exists (select 1 from qt_completions where student_id = me and template_id = today_template) then
@@ -463,7 +487,7 @@ declare
   me uuid := current_student_id();
   today_template uuid;
 begin
-  select id into today_template from qt_template_for(current_date);
+  select id into today_template from qt_template_for(haneulbit_today());
   if today_template is null then return '[]'::jsonb; end if;
 
   if not exists (select 1 from qt_completions where student_id = me and template_id = today_template) then
@@ -479,6 +503,156 @@ begin
   ), '[]'::jsonb);
 end;
 $$;
+
+-- =========================================================
+-- 3-2. 선생님 QT 템플릿 작성·게시
+-- =========================================================
+
+-- 이번 주 선생님용 템플릿 전체를 읽습니다. 초안도 선생님에게만 보입니다.
+create or replace function get_teacher_weekly_qt(p_week_start date default null)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $
+declare
+  target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+
+  return coalesce((
+    select jsonb_agg(
+      jsonb_build_object(
+        'id', q.id,
+        'weekday', q.weekday,
+        'reference', q.reference,
+        'verse', q.verse,
+        'teacherMessage', q.teacher_message,
+        'audioUrl', q.audio_url,
+        'isVoiceGenerated', q.is_voice_generated,
+        'isPublished', q.is_published
+      )
+      order by case q.weekday
+        when 'mon' then 1 when 'tue' then 2 when 'wed' then 3
+        when 'thu' then 4 when 'fri' then 5 else 6 end
+    )
+    from weekly_qt_templates q
+    where q.week_start_date = target_week
+  ), '[]'::jsonb);
+end;
+$;
+
+-- 초안을 저장합니다. 본문/구절이 바뀌면 기존 음성은 무효화하고,
+-- 수정된 내용이 학생에게 바로 노출되지 않도록 게시 상태를 초안으로 되돌립니다.
+create or replace function save_teacher_qt_template(
+  p_weekday text,
+  p_reference text,
+  p_verse text,
+  p_teacher_message text,
+  p_week_start date default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $
+declare
+  target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
+  saved weekly_qt_templates;
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+  if p_weekday not in ('mon', 'tue', 'wed', 'thu', 'fri') then raise exception 'INVALID_WEEKDAY'; end if;
+
+  insert into weekly_qt_templates as existing (
+    week_start_date, weekday, reference, verse, teacher_message,
+    is_voice_generated, is_published, created_by
+  )
+  values (
+    target_week, p_weekday, coalesce(p_reference, ''), coalesce(p_verse, ''),
+    coalesce(p_teacher_message, ''), false, false, auth.uid()
+  )
+  on conflict (week_start_date, weekday) do update
+  set
+    reference = excluded.reference,
+    verse = excluded.verse,
+    teacher_message = excluded.teacher_message,
+    is_voice_generated = case
+      when existing.reference is distinct from excluded.reference
+        or existing.verse is distinct from excluded.verse
+      then false else existing.is_voice_generated end,
+    audio_url = case
+      when existing.reference is distinct from excluded.reference
+        or existing.verse is distinct from excluded.verse
+      then null else existing.audio_url end,
+    is_published = false
+  returning * into saved;
+
+  return jsonb_build_object(
+    'id', saved.id,
+    'weekday', saved.weekday,
+    'reference', saved.reference,
+    'verse', saved.verse,
+    'teacherMessage', saved.teacher_message,
+    'audioUrl', saved.audio_url,
+    'isVoiceGenerated', saved.is_voice_generated,
+    'isPublished', saved.is_published
+  );
+end;
+$;
+
+-- 게시 시 서버가 필수 필드를 다시 확인합니다.
+create or replace function publish_teacher_qt_template(
+  p_weekday text,
+  p_week_start date default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $
+declare
+  target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
+  saved weekly_qt_templates;
+begin
+  if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
+  if p_weekday not in ('mon', 'tue', 'wed', 'thu', 'fri') then raise exception 'INVALID_WEEKDAY'; end if;
+
+  select * into saved
+  from weekly_qt_templates
+  where week_start_date = target_week and weekday = p_weekday;
+
+  if saved.id is null then raise exception 'QT_DRAFT_NOT_FOUND'; end if;
+  if length(trim(saved.reference)) = 0
+    or length(trim(saved.verse)) = 0
+    or length(trim(saved.teacher_message)) = 0 then
+    raise exception 'INCOMPLETE_QT';
+  end if;
+
+  update weekly_qt_templates
+  set is_published = true
+  where id = saved.id
+  returning * into saved;
+
+  return jsonb_build_object(
+    'id', saved.id,
+    'weekday', saved.weekday,
+    'reference', saved.reference,
+    'verse', saved.verse,
+    'teacherMessage', saved.teacher_message,
+    'audioUrl', saved.audio_url,
+    'isVoiceGenerated', saved.is_voice_generated,
+    'isPublished', saved.is_published
+  );
+end;
+$;
+
+revoke execute on function get_teacher_weekly_qt(date) from public, anon;
+revoke execute on function save_teacher_qt_template(text, text, text, text, date) from public, anon;
+revoke execute on function publish_teacher_qt_template(text, date) from public, anon;
+grant execute on function get_teacher_weekly_qt(date) to authenticated;
+grant execute on function save_teacher_qt_template(text, text, text, text, date) to authenticated;
+grant execute on function publish_teacher_qt_template(text, date) to authenticated;
 
 -- =========================================================
 -- 4. 2단계 WWJD 퀴즈
@@ -574,9 +748,9 @@ declare
 begin
   if not is_teacher() then raise exception 'NOT_TEACHER'; end if;
 
-  select id into today_template from qt_template_for(current_date);
+  select id into today_template from qt_template_for(haneulbit_today());
   select id into this_week_quiz from wwjd_quizzes
-   where week_start_date = date_trunc('week', current_date)::date limit 1;
+   where week_start_date = date_trunc('week', haneulbit_today())::date limit 1;
 
   return coalesce((
     select jsonb_agg(
@@ -868,30 +1042,9 @@ begin
 end;
 $$;
 
--- QT·퀴즈·감사 기록을 마쳤을 때 아이 스스로 받는 달란트입니다.
--- 지금은 앱이 "다 했다"고 알려 주는 구조라, 한 번에 받을 수 있는 양을 서버가 제한합니다.
--- QT 완료 기록 자체가 서버로 옮겨지면 그때 완료 여부까지 서버가 확인하게 바꿔야 합니다.
-create or replace function earn_talents(p_amount int, p_reason text)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public, extensions
-as $$
-declare
-  me uuid := current_student_id();
-begin
-  if me is null then raise exception '로그인이 필요해요'; end if;
-  if p_amount is null or p_amount < 1 or p_amount > 50 then
-    raise exception 'INVALID_AMOUNT';
-  end if;
-
-  insert into talent_transactions (student_id, amount, reason)
-  values (me, p_amount, p_reason);
-  update students set talent_points = talent_points + p_amount where id = me;
-
-  return get_my_armor_state();
-end;
-$$;
+-- 공용 학생 보상 RPC는 제거합니다.
+-- 보상은 QT처럼 각 활동의 실제 완료 기록과 중복 여부를 검증하는 전용 RPC에서만 지급합니다.
+drop function if exists earn_talents(int, text);
 
 -- 착용/해제는 달란트가 오가지 않으므로 상태만 뒤집습니다.
 create or replace function toggle_equip_armor(p_armor_id text)
