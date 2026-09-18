@@ -58,9 +58,10 @@ export async function loginStudent(name: string, pin: string): Promise<StudentPr
     // 그 밖의 오류(권한, 함수 없음 등)는 삼키지 않고 위로 올려 화면이 구분해 안내하게 합니다.
     throw error;
   }
-  if (!data) return null;
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return null;
 
-  return { id: data.id, name: data.name, avatarEmoji: data.avatar_emoji };
+  return { id: row.id, name: row.name, avatarEmoji: row.avatar_emoji };
 }
 
 /** 지금 비밀번호가 맞는지 확인합니다. 첫 단계에서 바로 알려 주기 위해 씁니다. */
