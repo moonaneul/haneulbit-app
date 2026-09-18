@@ -30,7 +30,7 @@ begin
   new.updated_at = now();
   return new;
 end;
-$;
+$$;
 
 -- 서비스의 "오늘"은 교회가 있는 한국 시간 기준으로 계산합니다.
 -- Supabase DB 세션 시간대가 UTC여도 QT 날짜가 자정 전후에 어긋나지 않게 합니다.
@@ -39,9 +39,9 @@ returns date
 language sql
 stable
 set search_path = public, extensions
-as $
+as $$
   select (now() at time zone 'Asia/Seoul')::date;
-$;
+$$;
 
 -- =========================================================
 -- 1. 계정 (역할별로 완전히 분리된 테이블)
@@ -147,7 +147,7 @@ returns table (id uuid, name text, avatar_emoji text)
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $$
 declare
   matched_id uuid;
 begin
@@ -174,7 +174,7 @@ begin
   from students s
   where s.id = matched_id;
 end;
-$;
+$$;
 
 revoke execute on function claim_student_login(text, text) from public, anon;
 grant execute on function claim_student_login(text, text) to authenticated;
@@ -515,7 +515,7 @@ language plpgsql
 stable
 security definer
 set search_path = public, extensions
-as $
+as $$
 declare
   target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
 begin
@@ -541,7 +541,7 @@ begin
     where q.week_start_date = target_week
   ), '[]'::jsonb);
 end;
-$;
+$$;
 
 -- 초안을 저장합니다. 본문/구절이 바뀌면 기존 음성은 무효화하고,
 -- 수정된 내용이 학생에게 바로 노출되지 않도록 게시 상태를 초안으로 되돌립니다.
@@ -556,7 +556,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $$
 declare
   target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
   saved weekly_qt_templates;
@@ -599,7 +599,7 @@ begin
     'isPublished', saved.is_published
   );
 end;
-$;
+$$;
 
 -- 게시 시 서버가 필수 필드를 다시 확인합니다.
 create or replace function publish_teacher_qt_template(
@@ -610,7 +610,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $$
 declare
   target_week date := coalesce(p_week_start, date_trunc('week', haneulbit_today())::date);
   saved weekly_qt_templates;
@@ -645,7 +645,7 @@ begin
     'isPublished', saved.is_published
   );
 end;
-$;
+$$;
 
 revoke execute on function get_teacher_weekly_qt(date) from public, anon;
 revoke execute on function save_teacher_qt_template(text, text, text, text, date) from public, anon;
